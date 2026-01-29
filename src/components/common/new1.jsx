@@ -6,7 +6,7 @@ import { Typewriter } from 'react-simple-typewriter'
 import { Check } from 'lucide-react'
 import FreeTrialForm from './FreeTrialForm'
 import Link from 'next/link'
-// --- Helper Hook for Media Queries ---
+// --- Helper Hook for Media Queries ------
 const useMediaQuery = (query) => {
   const [matches, setMatches] = useState(false)
   useEffect(() => {
