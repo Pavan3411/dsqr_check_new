@@ -1,0 +1,13 @@
+/* locomotive.css */
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+[data-scroll-container] {
+  overflow: hidden;
+}
+
+.scroll-container {
+  position: relative;
+}
