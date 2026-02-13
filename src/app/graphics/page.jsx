@@ -10,8 +10,11 @@ import ServicesOffered from '@/components/common/service'
 import TestimonialSection from '@/components/common/Testimonial'
 import WhySection from '@/components/common/why'
 import WorkProcess from '@/components/common/workProcess'
-import { PRICES, buildCheckoutLink } from '@/components/constants/pricing'
-import { useRef } from 'react'
+import { useEffect, useState, useRef } from 'react'
+import {
+  mapApiPricingToStructure,
+  buildCheckoutLink,
+} from '@/components/constants/pricing'
 import ScrollingFooterBanner from '../../components/common/ScrollingFooterBanner'
 import { useAnimatedBackground } from '../../components/hooks/useAnimatedBackground'
 import { motion } from 'framer-motion'
@@ -96,7 +99,7 @@ const features = [
   { id: '20', text: 'Custom Icons' },
 ]
 
-export default function Graphics() {
+export default function GraphicsPage() {
   const containerRef = useRef(null) // Ref for the whole page container
   const blackSectionStartRef = useRef(null) // Ref for the start of the black section
   const blackSectionEndRef = useRef(null) // Ref for the end of the black section
@@ -106,6 +109,65 @@ export default function Graphics() {
     startRef: blackSectionStartRef,
     endRef: blackSectionEndRef,
   })
+  const [pricing, setPricing] = useState(null)
+  const [pricesObj, setPricesObj] = useState({})
+  const [verticalServices, setVerticalServices] = useState([])
+
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/pricing`)
+      .then((res) => res.json())
+      .then((data) => {
+        let mapped = {}
+        if (
+          data &&
+          data.data &&
+          typeof data.data === 'object' &&
+          !Array.isArray(data.data)
+        ) {
+          mapped = data.data
+        } else if (data && Array.isArray(data.data)) {
+          mapped = mapApiPricingToStructure(data.data)
+        }
+        function convertKeysToJS(obj) {
+          if (typeof obj !== 'object' || obj === null) return obj
+          if (Array.isArray(obj)) return obj.map(convertKeysToJS)
+          const newObj = {}
+          for (const key in obj) {
+            const value = obj[key]
+            let newKey = key
+            if (!isNaN(key) && key.trim() !== '') {
+              newKey = Number(key)
+            } else if (/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(key)) {
+              newKey = key
+            }
+            newObj[newKey] = convertKeysToJS(value)
+          }
+          return newObj
+        }
+        if (Object.keys(mapped).length) {
+          setPricesObj(convertKeysToJS(mapped))
+        }
+        setPricing(data)
+      })
+      .catch((err) => console.error(err))
+
+    // Fetch vertical services images
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/media-items/category/graphics?subsection=service-images`)
+      .then((res) => res.json())
+      .then((data) => {
+        // Expecting data.data to be an array of image objects
+        if (data && Array.isArray(data.data)) {
+          setVerticalServices(
+            data.data.map((item, idx) => ({
+              img: item.url || item.src || '',
+              title: String(idx + 1), // Use index as title (id number)
+            }))
+          )
+        }
+      })
+      .catch((err) => console.error('Error fetching vertical services:', err))
+  }, [])
+
   return (
     <div ref={containerRef} className="relative bg-primary">
       {/* B. Add the fixed background element that will change color */}
@@ -121,52 +183,7 @@ export default function Graphics() {
           </div>
           <div ref={blackSectionStartRef} className="bg-transparent">
             <ServicesOffered
-              verticalServices={[
-                {
-                  img: 'https://dsqrstudio.b-cdn.net/Graphics/graphic-service/1%20(1).webp',
-                  title: 'Vertical Service 1',
-                },
-                {
-                  img: 'https://dsqrstudio.b-cdn.net/Graphics/graphic-service/1%20(2).webp',
-                  title: 'Vertical Service 2',
-                },
-                {
-                  img: 'https://dsqrstudio.b-cdn.net/Graphics/graphic-service/1.webp',
-                  title: 'Vertical Service 3',
-                },
-                {
-                  img: 'https://dsqrstudio.b-cdn.net/Graphics/graphic-service/3.webp',
-                  title: 'Vertical Service 4',
-                },
-                {
-                  img: 'https://dsqrstudio.b-cdn.net/Graphics/graphic-service/6%20(1).webp',
-                  title: 'Vertical Service 5',
-                },
-                {
-                  img: 'https://dsqrstudio.b-cdn.net/Graphics/graphic-service/6%20(2).webp',
-                  title: 'Vertical Service 6',
-                },
-                {
-                  img: 'https://dsqrstudio.b-cdn.net/Graphics/graphic-service/6.webp',
-                  title: 'Vertical Service 7',
-                },
-                {
-                  img: 'https://dsqrstudio.b-cdn.net/Graphics/graphic-service/8%20(1).webp',
-                  title: 'Vertical Service 8',
-                },
-                {
-                  img: 'https://dsqrstudio.b-cdn.net/Graphics/graphic-service/8%20(2).webp',
-                  title: 'Vertical Service 9',
-                },
-                {
-                  img: 'https://dsqrstudio.b-cdn.net/Graphics/graphic-service/8%20(3).webp',
-                  title: 'Vertical Service 10',
-                },
-                {
-                  img: 'https://dsqrstudio.b-cdn.net/Graphics/graphic-service/8.webp',
-                  title: 'Vertical Service 11',
-                },
-              ]}
+              verticalServices={verticalServices}
               horizontalServices={[]}
               heading={{
                 title1: 'A Glimpse into our',
@@ -226,7 +243,7 @@ leave a lasting impact."
               {/* Pricing Card */}
               <Card
                 title="Graphic"
-                prices={PRICES.Graphic}
+                prices={pricesObj.Graphic}
                 description="Perfect for agencies, marketers & startups with ongoing design needs, from ads and carousels to social posts & more."
                 ribbon="value"
                 firstFeature="Unlimited Graphic Requests"

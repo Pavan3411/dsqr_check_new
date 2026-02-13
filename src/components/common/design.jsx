@@ -23,11 +23,11 @@ const useMediaQuery = (query) => {
   return matches
 }
 // --- Data Layer ---
-const stats = [
-  { value: '11,000+', label: 'Videos Edited' },
-  { value: '54k+', label: 'Hours Saved' },
-  { value: '22M+', label: 'Organic Views Generated' },
-  { value: '4h/Day', label: 'Time Saved Per Client' },
+const statsLabels = [
+  { key: 'videosEdited', label: 'Videos Edited' },
+  { key: 'clientTimeSaved', label: 'Hours Saved' },
+  { key: 'organicViews', label: 'Organic Views Generated' },
+  { key: 'timeSavedPerClient', label: 'Time Saved Per Client' },
 ]
 
 const floatingIcons = [
@@ -270,13 +270,28 @@ export default function CreativeSuiteAnimation() {
     offset: ['start start', 'end end'],
   })
 
+  const [ourWorkStats, setOurWorkStats] = useState(null)
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/settings/ourWorkStats`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) setOurWorkStats(data.data)
+      })
+  }, [])
+
+  // Build stats array with backend values and hardcoded labels
+  const stats = statsLabels.map(({ key, label }) => ({
+    value: ourWorkStats && ourWorkStats[key] ? ourWorkStats[key] : '-',
+    label,
+  }))
+
   const statsTransforms = stats.map((_, i) => {
     const start = 0.15 + i * 0.18
     const end = start + 0.18
     const opacity = useTransform(
       scrollYProgress,
       [start, (start + end) / 2],
-      [0, 1]
+      [0, 1],
     )
     const y = useTransform(scrollYProgress, [start, (start + end) / 2], [50, 0])
     return { opacity, y }

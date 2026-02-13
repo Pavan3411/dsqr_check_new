@@ -1,37 +1,37 @@
-"use client";
+'use client'
 
-import React from "react";
-import Image from "next/image";
-import Marquee from "react-fast-marquee";
+import React from 'react'
+import Image from 'next/image'
+import Marquee from 'react-fast-marquee'
 
-const logos = [
-  "/images/L2.png",
-  "/images/L3.png",
-  "/images/L4.png",
-  "/images/L5.png",
-  "/images/L6.png",
-  "/images/L7.png",
-  "/images/L8.png",
-  "/images/L9.png",
-  "/images/L10.png",
-  "/images/L11.png",
-  "/images/L12.png",
-  "/images/L13.png",
-  "/images/L14.png",
-  "/images/L15.png",
-  "/images/L16.png",
-  "/images/L17.png",
-  "/images/L18.png",
-  "/images/L19.png",
-  "/images/L20.png",
-];
+import { useState, useEffect } from 'react'
 
 export default function TrustedBySection() {
+  const [logos, setLogos] = useState([])
+  useEffect(() => {
+    fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/admin/media-items/category/client_logos`,
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        console.log('Fetched logo data:', data)
+        if (data && Array.isArray(data.data)) {
+          // Only use the src property from each logo object
+          const logoSrcs = data.data.map((l) => l.src).filter(Boolean)
+          console.log('Logo srcs:', logoSrcs)
+          setLogos(logoSrcs)
+        } else {
+          console.log('Logo data is not an array:', data.data)
+        }
+      })
+      .catch((err) => console.error('Failed to fetch logos:', err))
+  }, [])
+
   return (
     <section className="md:py-12 py-4 overflow-hidden relative">
       <div>
         <h2 className="text-4xl sm:text-5xl font-semibold mb-2 tracking-tight px-4 sm:px-8 max-w-7xl mx-auto">
-          Trusted by{" "}
+          Trusted by{' '}
           <span className="font-instrument-italic font-extralight">
             the Best.
           </span>
@@ -41,18 +41,14 @@ export default function TrustedBySection() {
         </p>
 
         {/* Marquee Section */}
-        <Marquee
-          speed={90}
-          // pauseOnHover={true}
-          // pauseOnClick={true}
-          direction="left"
-          gradient={false}
-          className="py-6"
-        >
-          {logos.map((img, i) => (
-            <div key={i} className="mx-4 md:mx-10 flex items-center justify-center">
+        <Marquee speed={90} direction="left" gradient={false} className="py-6">
+          {logos.map((src, i) => (
+            <div
+              key={src || i}
+              className="mx-4 md:mx-10 flex items-center justify-center"
+            >
               <Image
-                src={img}
+                src={src}
                 alt={`Logo ${i}`}
                 width={180}
                 height={120}
@@ -63,5 +59,5 @@ export default function TrustedBySection() {
         </Marquee>
       </div>
     </section>
-  );
+  )
 }

@@ -3,15 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
 
-const images = [
-  'https://dsqrstudio.b-cdn.net/Home-page/123/061780c5664329f83d61fadcb765573947ebc977.png?w=800&format=webp&quality=75',
-  'https://dsqrstudio.b-cdn.net/Home-page/123/2ee7eff48c6e6734d335428432f4a0965a50894e.png?w=800&format=webp&quality=75',
-  'https://dsqrstudio.b-cdn.net/Home-page/123/5e8c962a01ee616271366e1acdba49859744fb21.png?w=800&format=webp&quality=75',
-  'https://dsqrstudio.b-cdn.net/Home-page/123/64061c7faea6a130e4ec88d8a356e950e99bacf4.png?w=800&format=webp&quality=75',
-  'https://dsqrstudio.b-cdn.net/Home-page/123/7c056c3328239e4c7d0cab746b62529a510e991f.png?w=800&format=webp&quality=75',
-  'https://dsqrstudio.b-cdn.net/Home-page/123/aab63ab841a54061f2856c3e930de006656fe5d3.png?w=800&format=webp&quality=75',
-  'https://dsqrstudio.b-cdn.net/Home-page/123/ac97621c8c5708204e4ae9633df1bf198ce82b8a.png?w=800&format=webp&quality=75',
-]
+
 
 const useMediaQuery = (query) => {
   const [matches, setMatches] = useState(false)
@@ -31,7 +23,31 @@ const useMediaQuery = (query) => {
   return matches
 }
 
+
 const AnimatedSection = () => {
+  const [images, setImages] = useState([])
+  if (images.length === 0) {
+    return null; // or a loading spinner if you want
+  }
+
+  useEffect(() => {
+    const fetchImages = async () => {
+      try {
+        const backendBaseUrl = process.env.NEXT_PUBLIC_API_URL;
+        const res = await fetch(`${backendBaseUrl}/api/admin/media-items/category/home-page?subsection=123`);
+        const data = await res.json();
+        const imgs = Array.isArray(data.data)
+          ? data.data.map(item => item.src)
+          : [];
+        setImages(imgs);
+        console.log('Fetched 123-section images:', imgs);
+      } catch (error) {
+        console.error('Error fetching 123-section images:', error);
+      }
+    };
+    fetchImages();
+  }, []);
+  
   const [clipPath, setClipPath] = useState('inset(-100vmax)')
   const targetRef = useRef(null)
   const { scrollYProgress } = useScroll({
@@ -198,76 +214,78 @@ const AnimatedSection = () => {
 
   const shortHeightFactor = viewportHeight < 800 ? 0.85 : 1.0
 
-  const imageTransforms = images.map((_, i) => {
-    const finalStackedY = (i - (images.length - 1) / 2) * -8
-    const finalStackedRotate = (i - (images.length - 1) / 2) * -6
+  const imageTransforms = images.length
+    ? images.map((_, i) => {
+        const finalStackedY = (i - (images.length - 1) / 2) * -8
+        const finalStackedRotate = (i - (images.length - 1) / 2) * -6
 
-    const mobileSpreadFactorX = isMobile ? 120 : 120
+        const mobileSpreadFactorX = isMobile ? 120 : 120
 
-    const spreadFinalX = (i - (images.length - 1) / 2) * mobileSpreadFactorX
-    const mobileSpreadOffsetY = isMobile ? 70 : 0
+        const spreadFinalX = (i - (images.length - 1) / 2) * mobileSpreadFactorX
+        const mobileSpreadOffsetY = isMobile ? 70 : 0
 
-    const spreadFinalY =
-      (i - (images.length - 1) / 2) * 60 + mobileSpreadOffsetY
-    let gridFinalX = 0
-    let gridFinalY = 0
+        const spreadFinalY =
+          (i - (images.length - 1) / 2) * 60 + mobileSpreadOffsetY
+        let gridFinalX = 0
+        let gridFinalY = 0
 
-    const startX = -containerWidth / 2 + finalImageWidth / 2
-    const startY = -containerHeight / 2 + finalImageHeight / 2
+        const startX = -containerWidth / 2 + finalImageWidth / 2
+        const startY = -containerHeight / 2 + finalImageHeight / 2
 
-    const gridPositions = [
-      { row: 0, col: 0 },
-      { row: 0, col: 1 },
-      { row: 0, col: 2 },
-      { row: 1, col: 0 },
-      { row: 1, col: 1 },
-      { row: 1, col: 2 },
-    ]
+        const gridPositions = [
+          { row: 0, col: 0 },
+          { row: 0, col: 1 },
+          { row: 0, col: 2 },
+          { row: 1, col: 0 },
+          { row: 1, col: 1 },
+          { row: 1, col: 2 },
+        ]
 
-    if (i !== 2) {
-      let gridIndex = i > 2 ? i - 1 : i
-      const pos = gridPositions[gridIndex]
-      gridFinalX = startX + pos.col * (finalImageWidth + gridGap)
-      gridFinalY = startY + pos.row * (finalImageHeight + gridGap)
-    } else {
-      gridFinalX = startX + 1 * (finalImageWidth + gridGap)
-      gridFinalY = startY - 50
-    }
-    const y = useTransform(
-      scrollYProgressSpring,
-      [0.15, 0.4, 0.5, 0.8],
-      [finalStackedY, spreadFinalY, spreadFinalY, gridFinalY]
-    )
-    const x = useTransform(
-      scrollYProgressSpring,
-      [0.15, 0.4, 0.5, 0.8],
-      [0, spreadFinalX, spreadFinalX, gridFinalX]
-    )
+        if (i !== 2) {
+          let gridIndex = i > 2 ? i - 1 : i
+          const pos = gridPositions[gridIndex]
+          gridFinalX = startX + pos.col * (finalImageWidth + gridGap)
+          gridFinalY = startY + pos.row * (finalImageHeight + gridGap)
+        } else {
+          gridFinalX = startX + 1 * (finalImageWidth + gridGap)
+          gridFinalY = startY - 50
+        }
+        const y = useTransform(
+          scrollYProgressSpring,
+          [0.15, 0.4, 0.5, 0.8],
+          [finalStackedY, spreadFinalY, spreadFinalY, gridFinalY]
+        )
+        const x = useTransform(
+          scrollYProgressSpring,
+          [0.15, 0.4, 0.5, 0.8],
+          [0, spreadFinalX, spreadFinalX, gridFinalX]
+        )
 
-    const rotate = useTransform(
-      scrollYProgressSpring,
-      [0.15, 0.4, 0.8],
-      [finalStackedRotate, 0, 0]
-    )
+        const rotate = useTransform(
+          scrollYProgressSpring,
+          [0.15, 0.4, 0.8],
+          [finalStackedRotate, 0, 0]
+        )
 
-    const scale = useTransform(
-      scrollYProgressSpring,
-      [0, 0.15, 0.4, 0.8],
-      [
-        desktopEarlyScale * shortHeightFactor,
-        desktopEarlyScale * shortHeightFactor,
-        1,
-        finalScale,
-      ]
-    )
+        const scale = useTransform(
+          scrollYProgressSpring,
+          [0, 0.15, 0.4, 0.8],
+          [
+            desktopEarlyScale * shortHeightFactor,
+            desktopEarlyScale * shortHeightFactor,
+            1,
+            finalScale,
+          ]
+        )
 
-    const opacity = useTransform(
-      scrollYProgressSpring,
-      [0.5, 0.6],
-      [1, i === 2 ? 0 : 1]
-    )
-    return { y, x, rotate, scale, opacity }
-  })
+        const opacity = useTransform(
+          scrollYProgressSpring,
+          [0.5, 0.6],
+          [1, i === 2 ? 0 : 1]
+        )
+        return { y, x, rotate, scale, opacity }
+      })
+    : []
 
   useEffect(() => {
     return scrollYProgress.onChange((latest) => {
@@ -444,7 +462,7 @@ const AnimatedSection = () => {
               </div>
             </motion.div>
 
-            {images.map((src, i) => {
+            {images.length > 0 && images.map((src, i) => {
               const { x, y, rotate, scale, opacity } = imageTransforms[i]
               return (
                 <div

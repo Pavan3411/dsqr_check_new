@@ -74,19 +74,19 @@ const CardWrapper = ({
   const labelOpacity = useTransform(
     scrollYProgress,
     [0, 0.15, 0.4, 0.45],
-    [initialLabelOpacity, 0, 0, 1]
+    [initialLabelOpacity, 0, 0, 1],
   )
 
   const labelScale = useTransform(
     scrollYProgress,
     [0, 0.15, 0.4, 0.45, 0.5],
-    [initialLabelScale, 0.5, 0.5, 1.1, 1]
+    [initialLabelScale, 0.5, 0.5, 1.1, 1],
   )
 
   const labelY = useTransform(
     scrollYProgress,
     [0, 0.15, 0.4, 0.45],
-    [0, 10, 10, 0]
+    [0, 10, 10, 0],
   )
 
   return (
@@ -192,7 +192,7 @@ export default function StackedCardAnimation() {
   const isMobile = useMediaQuery('(max-width: 768px)')
   const isTablet = useMediaQuery('(min-width: 769px) and (max-width: 1024px)')
   const isSmallDesktop = useMediaQuery(
-    '(min-width: 1025px) and (max-width: 1280px)'
+    '(min-width: 1025px) and (max-width: 1280px)',
   )
 
   const config = useMemo(() => {
@@ -307,52 +307,49 @@ export default function StackedCardAnimation() {
   //   { id: 6, src: "https://placehold.co/200x200/F0D9E7/333?text=Card+6" },
   //   { id: 7, src: "https://placehold.co/200x200/E0E0E0/333?text=Card+7" },
   // ];
-  const cardData = [
-    {
-      id: 1,
-      src: 'https://dsqrstudio.b-cdn.net/Home-page/hero-section/1.png?w=800&format=webp&quality=75',
-    },
-    {
-      id: 2,
-      src: 'https://dsqrstudio.b-cdn.net/Home-page/hero-section/3.png?w=800&format=webp&quality=75',
-    },
-    {
-      id: 3,
-      src: 'https://dsqrstudio.b-cdn.net/Home-page/hero-section/4.png?w=800&format=webp&quality=75',
-    },
-    {
-      id: 4,
-      src: 'https://dsqrstudio.b-cdn.net/Home-page/hero-section/e4da6fd9ce2746a0b0e15f9de9169dab1a795993.png?w=800&format=webp&quality=75',
-    },
-    {
-      id: 5,
-      src: 'https://dsqrstudio.b-cdn.net/Home-page/hero-section/6.png?w=800&format=webp&quality=75',
-    },
-    {
-      id: 6,
-      src: 'https://dsqrstudio.b-cdn.net/Home-page/hero-section/7.png?w=800&format=webp&quality=75',
-    },
-    {
-      id: 7,
-      src: 'https://dsqrstudio.b-cdn.net/Home-page/hero-section/5.png?w=800&format=webp&quality=75',
-    },
-  ]
+  const [cardData, setCardData] = useState([])
 
-const visibleCards = useMemo(() => {
-  // safety
-  if (numCards <= 0) return []
+  useEffect(() => {
+    const fetchHeroSectionImages = async () => {
+      try {
+        const backendBaseUrl =
+          process.env.NEXT_PUBLIC_API_URL
+        const res = await fetch(
+          `${backendBaseUrl}/api/admin/media-items/category/home-page?subsection=hero-section`,
+        )
+        const data = await res.json()
+        // Use data.data and correct keys (_id, src)
+        const cards = Array.isArray(data.data)
+          ? data.data.map((item) => ({ id: item._id, src: item.src }))
+          : []
+        setCardData(cards)
+        console.log('Fetched hero-section images:', cards)
+      } catch (error) {
+        console.error('Error fetching hero-section images:', error)
+      }
+    }
+    fetchHeroSectionImages()
+  }, [])
 
-  // ensure we don't try to take more than available
-  const take = Math.min(numCards, cardData.length)
+  const visibleCards = useMemo(() => {
+    // safety
+    if (!Array.isArray(cardData) || numCards <= 0) return []
 
-  // if we only show one card, make it the 7th (last) card
-  if (take === 1) return [cardData[cardData.length - 1]]
+    // filter out any undefined or invalid card objects
+    const validCards = cardData.filter((card) => card && card.id && card.src)
+    if (validCards.length === 0) return []
 
-  // take the first (take - 1) cards, then force the last slot to be the 7th card
-  const head = cardData.slice(0, take - 1)
-  const last = cardData[cardData.length - 1]
-  return [...head, last]
-}, [numCards, cardData])
+    // ensure we don't try to take more than available
+    const take = Math.min(numCards, validCards.length)
+
+    // if we only show one card, make it the last valid card
+    if (take === 1) return [validCards[validCards.length - 1]]
+
+    // take the first (take - 1) cards, then force the last slot to be the last valid card
+    const head = validCards.slice(0, take - 1)
+    const last = validCards[validCards.length - 1]
+    return [...head, last]
+  }, [numCards, cardData])
 
   useEffect(() => {
     const entranceSequence = async () => {
@@ -595,9 +592,7 @@ const visibleCards = useMemo(() => {
                     className="relative w-52 sm:w-auto overflow-hidden bg-[var(--color-primary)] hover:bg-[#cfee04] text-black font-medium px-6 py-2 rounded-full shadow-md cursor-pointer text-sm sm:text-base"
                     onClick={() => setOpen(true)}
                   >
-                    <span className="relative z-10">
-                      Start Your Free Trial
-                    </span>
+                    <span className="relative z-10">Start Your Free Trial</span>
                     <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/60 to-transparent skew-x-[-20deg] transition-transform duration-700 group-hover:translate-x-full" />
                   </button>
                   <FreeTrialForm open={open} setOpen={setOpen} />

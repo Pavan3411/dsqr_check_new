@@ -1,0 +1,17 @@
+name: Trigger Vercel Deploy Hook (main)
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call Vercel Deploy Hook
+        env:
+          VERCEL_DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK_MAIN }}
+        run: |
+          echo "Triggering Vercel deploy for main branch..."
+          curl -X POST $VERCEL_DEPLOY_HOOK

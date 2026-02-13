@@ -1,22 +1,63 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useCurrency } from '@/components/hooks/useCurrency'
-import { PRICES } from '@/components/constants/pricing'
+import { mapApiPricingToStructure } from '@/components/constants/pricing'
 import Link from 'next/link'
 export default function Membership() {
   const [activeIdx, setActiveIdx] = useState(null)
+  const [pricing, setPricing] = useState(null)
+  const [pricesObj, setPricesObj] = useState({})
+
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/pricing`)
+      .then((res) => res.json())
+      .then((data) => {
+        let mapped = {}
+        if (
+          data &&
+          data.data &&
+          typeof data.data === 'object' &&
+          !Array.isArray(data.data)
+        ) {
+          mapped = data.data
+        } else if (data && Array.isArray(data.data)) {
+          mapped = mapApiPricingToStructure(data.data)
+        }
+        function convertKeysToJS(obj) {
+          if (typeof obj !== 'object' || obj === null) return obj
+          if (Array.isArray(obj)) return obj.map(convertKeysToJS)
+          const newObj = {}
+          for (const key in obj) {
+            const value = obj[key]
+            let newKey = key
+            if (!isNaN(key) && key.trim() !== '') {
+              newKey = Number(key)
+            } else if (/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(key)) {
+              newKey = key
+            }
+            newObj[newKey] = convertKeysToJS(value)
+          }
+          return newObj
+        }
+        if (Object.keys(mapped).length) {
+          setPricesObj(convertKeysToJS(mapped))
+        }
+        setPricing(data)
+      })
+      .catch((err) => console.error(err))
+  }, [])
 
   const curHook = useCurrency() // call hook once
   const currency = (curHook && curHook.toUpperCase()) || 'USD'
 
   // helper to get base price (tier 1) for a plan
   const getBasePrice = (plan) => {
-    const p = PRICES?.[plan]?.[1]?.base
+    const p = pricesObj?.[plan]?.[1]?.base
     if (!p) return '-'
     const amount = p[currency] || p.USD
-return { amount, currency }
+    return { amount, currency }
   }
 
   const cards = [
@@ -25,7 +66,6 @@ return { amount, currency }
       description:
         'Ideal for creators with daily needs. Hire a full-time editor team for a fraction of the cost.',
       price: getBasePrice('Video'),
-
       per: 'Per month',
       color: 'bg-primary',
       rotate: -5,
@@ -39,7 +79,6 @@ return { amount, currency }
       description:
         'Built for teams with daily needs. Access full-scale AI power for a fraction of the cost.',
       price: getBasePrice('AI'),
-
       per: 'Per month',
       color: 'bg-[var(--color-primary)]',
       rotate: -2,
@@ -53,13 +92,12 @@ return { amount, currency }
       description:
         'Perfect for brands with daily needs. Get a full-time designer team for a fraction of the cost.',
       price: getBasePrice('Graphic'),
-
       per: 'Per month',
       color: 'bg-primary',
       rotate: 3,
       offsetY: 15,
       leftPercent: 50,
-      zIndex: 30,
+      zIndex: 10,
       href: '/graphics',
     },
   ]
@@ -99,9 +137,8 @@ return { amount, currency }
             const isActive = activeIdx === idx
 
             return (
-              <Link href={card.href} passHref>
+              <Link href={card.href} passHref key={card.title || idx}>
                 <motion.div
-                  key={idx}
                   style={{
                     left: `${card.leftPercent}%`,
                     zIndex: isActive ? 60 : card.zIndex,
@@ -120,7 +157,7 @@ return { amount, currency }
                   <p className="text-gray-600 text-sm sm:mb-12 mb-16">
                     {card.description}
                   </p>
-                 {/* <div className="flex flex-col leading-tight">
+                  {/* <div className="flex flex-col leading-tight">
                   <p className="text-gray-500 text-sm mb-[-2px]">starting from</p>
   <div className="flex items-baseline gap-1">
     <span className="text-2xl font-bold">{card.price?.currency}</span>
@@ -130,18 +167,22 @@ return { amount, currency }
   <p className="text-gray-500 text-xs">month</p></span>
   </div>
 </div> */}
-                  <p className="text-gray-800 sm:text-sm text-xs">starting from</p>
-<div className="flex items-center sm:gap-2 gap-1">
-            <span className="sm:text-3xl text-2xl font-bold text-black">{card.price?.currency}</span>
-            <p className="sm:text-3xl text-2xl font-bold text-black">
-              {card.price?.amount}
-            </p>
-            <p className="sm:text-xs text-[10px] text-black/90 flex leading-2 ">
-              {' '}
-              Per <br />
-              month
-            </p>
-          </div>
+                  <p className="text-gray-800 sm:text-sm text-xs">
+                    starting from
+                  </p>
+                  <div className="flex items-center sm:gap-2 gap-1">
+                    <span className="sm:text-3xl text-2xl font-bold text-black">
+                      {card.price?.currency}
+                    </span>
+                    <p className="sm:text-3xl text-2xl font-bold text-black">
+                      {card.price?.amount}
+                    </p>
+                    <p className="sm:text-xs text-[10px] text-black/90 flex leading-2 ">
+                      {' '}
+                      Per <br />
+                      month
+                    </p>
+                  </div>
                 </motion.div>
               </Link>
             )

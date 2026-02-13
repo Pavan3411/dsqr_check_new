@@ -6,130 +6,120 @@ import { Button } from '@/components/ui/button'
 import EmblaTestimonials from '@/components/common/EmblaTestimonials'
 
 // ✅ Constant data (images reused 1..5 in a loop)
-const testimonials = [
-  {
-    id: 1,
-    name: 'Jack',
-    company: 'Ex-CEO, AllThingsAl',
-    image: '/images/Jack.jpeg',
-    text: "We've worked with 4 other editing agencies before and [[DSQR Studio and Div's team are THE BEST.]] They were easy to start with, easy to scale up video with, and very diligent and concise when it comes to editing.",
-    highlights: ["DSQR Studio and Div's team are THE BEST."],
-    stats: [
-      { value: '100%', label: 'Editing time saved' },
-      { value: '$3.7k+', label: 'Cost Saving' },
-      { value: '20+', label: 'Videos Delivered' },
-    ],
-  },
-  {
-    id: 2,
-    name: 'KRIS',
-    company: 'The Posh Lofts',
-    image: '/images/kris.png',
-    text: 'As a creative marketing agency, we cater to a diverse range of creative needs for our clients, with video editing being a critical component of our offerings. Working with DSQR Studio has been an incredible experience that has significantly [[elevated the quality of our content, helping us stand out in a competitive market]]! Their expertise has allowed us to focus on other aspects of our projects, knowing that the video editing is in capable hands.\n\nTheir editing skills have truly transformed our projects. Their attention to detail, creativity, and technical proficiency have brought our ideas to life in ways we could only imagine! The final products are consistently high-quality, engaging, and perfectly aligned with our vision. This level of excellence has not only satisfied our clients but also enhanced our reputation in the industry.\n\nThe best part of working with DSQR Studio is work ethic. They are incredibly patient, hard-working, and, most importantly, respectful and kind. Their dedication to understanding our needs and their unwavering commitment to delivering outstanding results make them an invaluable partner! We genuinely value everything they have done for us so far and eagerly anticipate our ongoing collaboration.\n\nAll in all, DSQR Studio has been a game-changer for us. Their video editing services are unparalleled, and their team is a pleasure to work with! We highly recommend DSQR Studio to anyone seeking to elevate their content and achieve remarkable results!',
-    highlights: ["elevated the quality of our content, helping us stand out in a competitive market"],
-    stats: [
-      { value: '4k+hrs', label: 'Editing time saved' },
-      { value: '$80k+', label: 'Cost Saving' },
-      { value: '500+', label: 'Videos Delivered' },
-    ],
-  },
-  {
-    id: 3,
-    name: 'Joshua J',
-    company: 'Home Health',
-    image: '/images/Joshua.jpg',
-    text: "Fantastic service. Deliver on what they say they will.[[First video knocked it out]]. I've had other companies and the review is always a pain.\n\nGREAT JOB",
-    highlights: ["First video knocked it out"],
-    stats: [
-      { value: '80+hrs', label: 'Editing time saved' },
-      { value: '$1K+', label: 'Cost Saving' },
-      { value: '20+', label: 'Videos Delivered' },
-    ],
-  },
-  {
-    id: 4,
-    name: 'Terry Manzi',
-    company: 'Three Entertainment Group',
-    image: '/images/Terry.png',
-    text: '[[Fantastic service]]. Deliver on what they say they will.',
-    highlights: ['Fantastic service'],
-    stats: [
-      { value: '150+hrs', label: 'Editing time saved' },
-      { value: '$2.7k+', label: 'Cost Saving' },
-      { value: '25+', label: 'Videos Delivered' },
-    ],
-  },
-  {
-    id: 5,
-    name: 'JORGE',
-    company: 'Offbeat podcast',
-    image: '/images/Jorge.png',
-    text: 'DSQR Studio is an exceptional video editing company. [[Their attention to detail, creativity, and professionalism set them apart]]. They consistently deliver stunning results that exceed expectations. I highly recommend DSQR Studio for anyone seeking top-notch video editing services. They have truly allowed me to focus more on my podcast and creating content.',
-    highlights: ['Their attention to detail, creativity, and professionalism set them apart'],
-    stats: [
-      { value: '500+hrs', label: 'Editing time saved' },
-      { value: '$8k+', label: 'Cost Saving' },
-      { value: '100+', label: 'Videos Delivered' },
-    ],
-  },
-  {
-    id: 6,
-    name: 'Christian',
-    company: 'Finsult',
-    image: '/images/Christian.png',
-    text: 'Dsqr really are the [[ultimate content team]]. They assist me in designing, editing and creating videos for my personal brand. They’ve taken my content to a whole new level! The best part is being able to edit so much in a fast turnaround and get that continuous service.',
-    highlights: ['ultimate content team'],
-    stats: [
-      { value: '700+hrs', label: 'Editing time saved' },
-      { value: '$14k+', label: 'Cost Saving' },
-      { value: '120+', label: 'Videos Delivered' },
-    ],
-  },
-  {
-    id: 7,
-    name: 'SAMIN',
-    company: 'Bookedin AI',
-    image: '/images/Samin.jpg',
-    text: 'Been great working with these guys, [[always super fast]] and does what I want quickly.',
-    highlights: ['always super fast'],
-    stats: [
-      { value: '1.9k+ hrs', label: 'Editing time saved' },
-      { value: '$35k+', label: 'Cost Saving' },
-      { value: '150+', label: 'Videos Delivered' },
-    ],
-  },
-  {
-    id: 8,
-    name: 'Stephen Guy',
-    company: 'Lead Agent Unlimited',
-    image: '/images/Stephen.jpg',
-    text: 'DSQR STUDIOS has lived up and exceeded what they say they offer. [[The quality and communication is top-notch]]. Quit wasting your time a hire them asap!!',
-    highlights: ['The quality and communication is top-notch'],
-    stats: [
-      { value: '3k+hrs', label: 'Editing time saved' },
-      { value: '$60k+', label: 'Cost Saving' },
-      { value: '380+', label: 'Videos Delivered' },
-    ],
-  },
-  {
-    id: 9,
-    name: 'PAVEL',
-    company: 'The Forbidden Fruit',
-    image: '/images/Pavel.jpg',
-    text: 'Great experience working with the team. [[Love the edits and attention to detail]]. Quality was top-notch, would recommend.',
-    highlights: ['Love the edits and attention to detail'],
-    stats: [
-      { value: '130+hrs', label: 'Editing time saved' },
-      { value: '$2.5k+', label: 'Cost Saving' },
-      { value: '610k+', label: 'Views generated' },
-    ],
-  },
-]
+// const testimonials = [
+//     ],
+//   },
+//   {
+//     id: 2,
+//     name: 'KRIS',
+//     company: 'The Posh Lofts',
+//     image: '/images/kris.png',
+//     text: 'As a creative marketing agency, we cater to a diverse range of creative needs for our clients, with video editing being a critical component of our offerings. Working with DSQR Studio has been an incredible experience that has significantly [[elevated the quality of our content, helping us stand out in a competitive market]]! Their expertise has allowed us to focus on other aspects of our projects, knowing that the video editing is in capable hands.\n\nTheir editing skills have truly transformed our projects. Their attention to detail, creativity, and technical proficiency have brought our ideas to life in ways we could only imagine! The final products are consistently high-quality, engaging, and perfectly aligned with our vision. This level of excellence has not only satisfied our clients but also enhanced our reputation in the industry.\n\nThe best part of working with DSQR Studio is work ethic. They are incredibly patient, hard-working, and, most importantly, respectful and kind. Their dedication to understanding our needs and their unwavering commitment to delivering outstanding results make them an invaluable partner! We genuinely value everything they have done for us so far and eagerly anticipate our ongoing collaboration.\n\nAll in all, DSQR Studio has been a game-changer for us. Their video editing services are unparalleled, and their team is a pleasure to work with! We highly recommend DSQR Studio to anyone seeking to elevate their content and achieve remarkable results!',
+//     highlights: ["elevated the quality of our content, helping us stand out in a competitive market"],
+//     stats: [
+//       { value: '4k+hrs', label: 'Editing time saved' },
+//       { value: '$80k+', label: 'Cost Saving' },
+//       { value: '500+', label: 'Videos Delivered' },
+//     ],
+//   },
+//   {
+//     id: 3,
+//     name: 'Joshua J',
+//     company: 'Home Health',
+//     image: '/images/Joshua.jpg',
+//     text: "Fantastic service. Deliver on what they say they will.[[First video knocked it out]]. I've had other companies and the review is always a pain.\n\nGREAT JOB",
+//     highlights: ["First video knocked it out"],
+//     stats: [
+//       { value: '80+hrs', label: 'Editing time saved' },
+//       { value: '$1K+', label: 'Cost Saving' },
+//       { value: '20+', label: 'Videos Delivered' },
+//     ],
+//   },
+//   {
+//     id: 4,
+//     name: 'Terry Manzi',
+//     company: 'Three Entertainment Group',
+//     image: '/images/Terry.png',
+//     text: '[[Fantastic service]]. Deliver on what they say they will.',
+//     highlights: ['Fantastic service'],
+//     stats: [
+//       { value: '150+hrs', label: 'Editing time saved' },
+//       { value: '$2.7k+', label: 'Cost Saving' },
+//       { value: '25+', label: 'Videos Delivered' },
+//     ],
+//   },
+//   {
+//     id: 5,
+//     name: 'JORGE',
+//     company: 'Offbeat podcast',
+//     image: '/images/Jorge.png',
+//     text: 'DSQR Studio is an exceptional video editing company. [[Their attention to detail, creativity, and professionalism set them apart]]. They consistently deliver stunning results that exceed expectations. I highly recommend DSQR Studio for anyone seeking top-notch video editing services. They have truly allowed me to focus more on my podcast and creating content.',
+//     highlights: ['Their attention to detail, creativity, and professionalism set them apart'],
+//     stats: [
+//       { value: '500+hrs', label: 'Editing time saved' },
+//       { value: '$8k+', label: 'Cost Saving' },
+//       { value: '100+', label: 'Videos Delivered' },
+//     ],
+//   },
+//   {
+//     id: 6,
+//     name: 'Christian',
+//     company: 'Finsult',
+//     image: '/images/Christian.png',
+//     text: 'Dsqr really are the [[ultimate content team]]. They assist me in designing, editing and creating videos for my personal brand. They’ve taken my content to a whole new level! The best part is being able to edit so much in a fast turnaround and get that continuous service.',
+//     highlights: ['ultimate content team'],
+//     stats: [
+//       { value: '700+hrs', label: 'Editing time saved' },
+//       { value: '$14k+', label: 'Cost Saving' },
+//       { value: '120+', label: 'Videos Delivered' },
+//     ],
+//   },
+//   {
+//     id: 7,
+//     name: 'SAMIN',
+//     company: 'Bookedin AI',
+//     image: '/images/Samin.jpg',
+//     text: 'Been great working with these guys, [[always super fast]] and does what I want quickly.',
+//     highlights: ['always super fast'],
+//     stats: [
+//       { value: '1.9k+ hrs', label: 'Editing time saved' },
+//       { value: '$35k+', label: 'Cost Saving' },
+//       { value: '150+', label: 'Videos Delivered' },
+//     ],
+//   },
+//   {
+//     id: 8,
+//     name: 'Stephen Guy',
+//     company: 'Lead Agent Unlimited',
+//     image: '/images/Stephen.jpg',
+//     text: 'DSQR STUDIOS has lived up and exceeded what they say they offer. [[The quality and communication is top-notch]]. Quit wasting your time a hire them asap!!',
+//     highlights: ['The quality and communication is top-notch'],
+//     stats: [
+//       { value: '3k+hrs', label: 'Editing time saved' },
+//       { value: '$60k+', label: 'Cost Saving' },
+//       { value: '380+', label: 'Videos Delivered' },
+//     ],
+//   },
+//   {
+//     id: 9,
+//     name: 'PAVEL',
+//     company: 'The Forbidden Fruit',
+//     image: '/images/Pavel.jpg',
+//     text: 'Great experience working with the team. [[Love the edits and attention to detail]]. Quality was top-notch, would recommend.',
+//     highlights: ['Love the edits and attention to detail'],
+//     stats: [
+//       { value: '130+hrs', label: 'Editing time saved' },
+//       { value: '$2.5k+', label: 'Cost Saving' },
+//       { value: '610k+', label: 'Views generated' },
+//     ],
+//   },
+// ]
 
 export default function TestimonialSection() {
   const [isPaused, setIsPaused] = useState(false)
   const [expanded, setExpanded] = useState(new Set())
   const [overflowMap, setOverflowMap] = useState({})
+  const [testimonials, setTestimonials] = useState([])
 
   const viewportRef = useRef(null)
   const trackRef = useRef(null)
@@ -237,6 +227,133 @@ export default function TestimonialSection() {
     })
     setOverflowMap(map)
   }, [testimonials]) // re-run when testimonials change
+
+  // const [testimonials, setTestimonials] = useState([])
+
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/testimonials`)
+      .then((res) => res.json())
+      .then((data) => {
+        // Handle API response structure: { success: true, data: [...] }
+        console.log('Raw testimonial data:', data)
+        const arr = Array.isArray(data)
+          ? data
+          : Array.isArray(data.data)
+            ? data.data
+            : []
+        if (!arr.length) {
+          console.error('API did not return an array of testimonials')
+          return
+        }
+        // Helper to format numbers to k (e.g., 2700 -> 2.7k)
+        const formatK = (num) => {
+          if (typeof num !== 'number') num = Number(num)
+          if (isNaN(num)) return ''
+          if (num >= 1000)
+            return (num / 1000).toFixed(num % 1000 === 0 ? 0 : 1) + 'k'
+          return num.toString()
+        }
+
+        const mapped = arr.map((item) => {
+          // Editing time: add + unless value is a percentage
+          let editingTime = item.stats?.editing_time
+          let editingTimeStr = ''
+          if (
+            editingTime !== undefined &&
+            editingTime !== null &&
+            editingTime !== ''
+          ) {
+            const isPercent =
+              typeof editingTime === 'string' &&
+              editingTime.trim().endsWith('%')
+            if (isPercent) {
+              editingTimeStr = editingTime + ' hrs'
+            } else {
+              const formatted = formatK(editingTime)
+              editingTimeStr = formatted + '+ hrs'
+            }
+          }
+
+          // Cost
+          let cost = item.stats?.cost
+          let costStr = ''
+          if (cost !== undefined && cost !== null && cost !== '') {
+            costStr = '$' + formatK(cost) + '+'
+          }
+
+          // Videos
+          let videos = item.stats?.videos
+          let videosStr = ''
+          if (videos !== undefined && videos !== null && videos !== '') {
+            videosStr = formatK(videos) + '+'
+          }
+
+          return {
+            id: item.id,
+            name: item.name,
+            company: item.company,
+            image: item.image,
+            text: item.text,
+            highlights: item.highlight ? [item.highlight] : [],
+            stats: [
+              editingTimeStr
+                ? { value: editingTimeStr, label: 'Editing time saved' }
+                : null,
+              costStr ? { value: costStr, label: 'Cost Saving' } : null,
+              videosStr
+                ? { value: videosStr, label: 'Videos Delivered' }
+                : null,
+            ].filter(Boolean),
+          }
+        })
+        setTestimonials(mapped)
+        console.log('Fetched testimonials:', mapped)
+      })
+      .catch((err) => {
+        console.error('Error fetching testimonials:', err)
+      })
+  }, [])
+
+  // useEffect(() => {
+  //   fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/testimonials`)
+  //     .then((res) => res.json())
+  //     .then((data) => {
+  //       const mapped = data.map((item) => ({
+  //         id: item._id || item.id,
+  //         name: item.name,
+  //         company: item.company,
+  //         image: item.image,
+  //         text: item.text,
+  //         highlights: item.highlight ? [item.highlight] : [],
+  //         stats: [
+  //           {
+  //             value: item.stats?.editing_time
+  //               ? `${item.stats.editing_time}hrs`
+  //               : '',
+  //             label: 'Editing time saved',
+  //           },
+  //           {
+  //             value: item.stats?.cost
+  //               ? `$${item.stats.cost}+`
+  //               : '',
+  //             label: 'Cost Saving',
+  //           },
+  //           {
+  //             value: item.stats?.videos
+  //               ? `${item.stats.videos}+`
+  //               : '',
+  //             label: 'Videos Delivered',
+  //           },
+  //         ].filter((s) => s.value),
+  //       }))
+
+  //       setTestimonials(mapped)
+  //       console.log('Fetched testimonials:', mapped)
+  //     })
+  //     .catch((err) => {
+  //       console.error('Error fetching testimonials:', err)
+  //     })
+  // }, [])
 
   return (
     <section className="xl:pt-12 py-6 xl:px-16 px-4 relative group overflow-hidden">

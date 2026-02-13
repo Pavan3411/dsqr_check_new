@@ -13,7 +13,10 @@ import { Check } from 'lucide-react'
 import { motion } from 'framer-motion'
 import useScrollOnLoad from '@/components/hooks/useScrollOnLoad'
 import Link from 'next/link'
-import { PRICES, buildCheckoutLink } from '@/components/constants/pricing'
+import {
+  mapApiPricingToStructure,
+  buildCheckoutLink,
+} from '@/components/constants/pricing'
 import FreeTrialForm from '@/components/common/FreeTrialForm'
 import { useRef } from 'react'
 import { useRouter } from 'next/navigation'
@@ -119,32 +122,137 @@ const features = [
 ]
 
 export default function VideoSection() {
+  // Bunny.net library ID for all Bunny videos
+  const libraryId = '588182'
+
+  function getBunnyIframeUrl(hlsUrl, libraryId) {
+    if (!hlsUrl) return null
+    const match = hlsUrl.match(/\/([a-f0-9-]+)\/playlist\.m3u8/)
+    if (!match) return null
+    const videoId = match[1]
+    return `https://iframe.mediadelivery.net/embed/${libraryId}/${videoId}?autoplay=true&muted=true&loop=true&playsinline=true&preload=true`
+  }
   const [isPlaying, setIsPlaying] = useState(false)
-  useScrollOnLoad('book-call') // 👈 works here
+  useScrollOnLoad('book-call')
   const [open, setOpen] = useState(false)
   const [isMuted, setIsMuted] = useState(true)
   const [loaded, setLoaded] = useState(false)
   const startShowingBannerRef = useRef(null)
   const stopShowingBannerRef = useRef(null)
   const router = useRouter()
-  const containerRef = useRef(null) // Ref for the whole page container
-  const blackSectionStartRef = useRef(null) // Ref for the start of the black section
-  const blackSectionEndRef = useRef(null) // Ref for the end of the black section
+  const containerRef = useRef(null)
+  const blackSectionStartRef = useRef(null)
+  const blackSectionEndRef = useRef(null)
   const { backgroundColor, textColor } = useAnimatedBackground({
     startRef: blackSectionStartRef,
     endRef: blackSectionEndRef,
   })
   const handlePlan = () => {
-    // If already on a page that has BookCall component
     if (document.getElementById('see-plan')) {
       document
         .getElementById('see-plan')
         ?.scrollIntoView({ behavior: 'smooth' })
     } else {
-      // Otherwise navigate to /video and scroll after load
       router.push('/video?scroll=see-plan')
     }
   }
+  const [pricing, setPricing] = useState(null)
+  const [pricesObj, setPricesObj] = useState({})
+  const [portfolioVideos, setPortfolioVideos] = useState([])
+  const [serviceVideos, setServiceVideos] = useState([])
+
+    useEffect(() => {
+      // Print the array in the desired format for debugging
+      if (serviceVideos && Array.isArray(serviceVideos)) {
+        const formatted = serviceVideos.map(v => ({
+          cdnLink: v.cdnLink || v.src || '',
+          poster: v.poster || v.thumbnail || '',
+          title: v.title || '',
+        }));
+        console.log('verticalServices array example:', formatted);
+      } else {
+        console.log('verticalServices array is empty or not an array:', serviceVideos);
+      }
+    }, [serviceVideos]);
+
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/pricing`)
+      .then((res) => res.json())
+      .then((data) => {
+        let mapped = {}
+        if (
+          data &&
+          data.data &&
+          typeof data.data === 'object' &&
+          !Array.isArray(data.data)
+        ) {
+          mapped = data.data
+        } else if (data && Array.isArray(data.data)) {
+          mapped = mapApiPricingToStructure(data.data)
+        }
+        function convertKeysToJS(obj) {
+          if (typeof obj !== 'object' || obj === null) return obj
+          if (Array.isArray(obj)) return obj.map(convertKeysToJS)
+          const newObj = {}
+          for (const key in obj) {
+            const value = obj[key]
+            let newKey = key
+            if (!isNaN(key) && key.trim() !== '') {
+              newKey = Number(key)
+            } else if (/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(key)) {
+              newKey = key
+            }
+            newObj[newKey] = convertKeysToJS(value)
+          }
+          return newObj
+        }
+        if (Object.keys(mapped).length) {
+          setPricesObj(convertKeysToJS(mapped))
+        }
+        setPricing(data)
+      })
+      .catch((err) => console.error(err))
+  }, [])
+
+  // Fetch portfolio videos (admin logic: only one allowed, category 'test')
+  useEffect(() => {
+    fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/admin/media-items/category/test?subsection=home-portfolio`,
+      {
+        credentials: 'include',
+      },
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        console.log('Portfolio API response:', data)
+        if (data && Array.isArray(data.data)) {
+          setPortfolioVideos(data.data)
+          console.log('Portfolio Videos:', data.data)
+        }
+      })
+      .catch((err) => {
+        console.error('Portfolio API error:', err)
+      })
+  }, [])
+
+  // Fetch service videos
+  useEffect(() => {
+    fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/admin/media-items/category/test?subsection=video-service-offered`,
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        console.log('Service API response:', data)
+        if (data && Array.isArray(data.data)) {
+          setServiceVideos(data.data)
+          console.log('Service Videos:', data.data)
+        }
+      })
+      .catch((err) => {
+        console.error('Service API error:', err)
+      })
+  }, [])
+
   return (
     <div ref={containerRef} className="relative bg-primary">
       {/* B. Add the fixed background element that will change color */}
@@ -208,8 +316,8 @@ export default function VideoSection() {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3, duration: 0.6 }}
             >
-              Scale your content without limits. No contracts, no headaches, just
-              seamless creative execution.
+              Scale your content without limits. No contracts, no headaches,
+              just seamless creative execution.
             </motion.p>
             {/* CTA Buttons */}
             <motion.div
@@ -255,24 +363,60 @@ export default function VideoSection() {
               ))}
             </motion.div>
           </div>
-          {/* Video Section */}
-          <motion.div
-            className="relative w-full max-w-6xl mx-auto mt-6 overflow-hidden rounded-xl aspect-video shadow-2xl"
-            initial={{ opacity: 0, y: 80 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: 'easeOut' }}
-            viewport={{ once: true }}
-          >
-            <iframe
-              // ref={iframeRef}
-              src="https://iframe.mediadelivery.net/embed/497756/9887b1a4-34ac-4c06-9e6a-27dcc25ed83c?autoplay=true&muted=true&loop=true&playsinline=true&preload=true"
-              loading="lazy"
-              allow="autoplay; fullscreen; encrypted-media"
-              allowFullScreen
-              className="w-full h-full border-0"
-              title="DSQR Studio autoplay"
-            />
-          </motion.div>
+          {/* Portfolio Video Section - Show only one video like admin */}
+          <div className="relative w-full max-w-6xl mx-auto mt-6">
+            {portfolioVideos.length > 0 ? (
+              <motion.div
+                key={portfolioVideos[0]._id || 0}
+                className="overflow-hidden rounded-xl aspect-video shadow-2xl"
+                initial={{ opacity: 0, y: 80 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, ease: 'easeOut' }}
+                viewport={{ once: true }}
+              >
+                {portfolioVideos[0].src &&
+                getBunnyIframeUrl(portfolioVideos[0].src, libraryId) ? (
+                  <iframe
+                    src={getBunnyIframeUrl(portfolioVideos[0].src, libraryId)}
+                    loading="lazy"
+                    allow="autoplay; fullscreen; encrypted-media"
+                    allowFullScreen
+                    className="w-full h-full border-0"
+                    title={portfolioVideos[0].title || 'Portfolio Video'}
+                  />
+                ) : portfolioVideos[0].cdnLink &&
+                  getBunnyIframeUrl(portfolioVideos[0].cdnLink, libraryId) ? (
+                  <iframe
+                    src={getBunnyIframeUrl(
+                      portfolioVideos[0].cdnLink,
+                      libraryId,
+                    )}
+                    loading="lazy"
+                    allow="autoplay; fullscreen; encrypted-media"
+                    allowFullScreen
+                    className="w-full h-full border-0"
+                    title={portfolioVideos[0].title || 'Portfolio Video'}
+                  />
+                ) : portfolioVideos[0].iframe ? (
+                  <iframe
+                    src={portfolioVideos[0].iframe}
+                    loading="lazy"
+                    allow="autoplay; fullscreen; encrypted-media"
+                    allowFullScreen
+                    className="w-full h-full border-0"
+                    title={portfolioVideos[0].title || 'Portfolio Video'}
+                  />
+                ) : null}
+                <div className="p-2 text-center text-sm font-medium text-gray-800">
+                  {portfolioVideos[0].title}
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div className="text-center text-gray-500">
+                No portfolio video found.
+              </motion.div>
+            )}
+          </div>
 
           <div className="block md:hidden mt-8 text-center">
             {/* Subheading */}
@@ -283,8 +427,8 @@ export default function VideoSection() {
               transition={{ delay: 0.3, duration: 0.6 }}
             >
               {' '}
-              Scale your content without limits. No contracts, no headaches, just
-              seamless creative execution.
+              Scale your content without limits. No contracts, no headaches,
+              just seamless creative execution.
             </motion.p>
             {/* CTA Buttons */}
             <motion.div
@@ -343,78 +487,11 @@ export default function VideoSection() {
             }}
             sectionLabel="Types of videos"
             subheading="Explore high-impact videos crafted for every platform, goal, and industry."
-            verticalServices={[
-              {
-                cdnLink:
-                  'https://vz-f20fe40d-4ba.b-cdn.net/22888882-30fd-44d8-82e5-f4372cbb756f/playlist.m3u8',
-                poster:
-                  'https://vz-f20fe40d-4ba.b-cdn.net/22888882-30fd-44d8-82e5-f4372cbb756f/thumbnail.jpg',
-                title: 'YouTube Video Editing',
-              },
-              {
-                cdnLink:
-                  'https://vz-f20fe40d-4ba.b-cdn.net/0c2bd13b-a922-4955-bc51-9ceeff9eab3d/playlist.m3u8',
-                poster:
-                  'https://vz-f20fe40d-4ba.b-cdn.net/0c2bd13b-a922-4955-bc51-9ceeff9eab3d/thumbnail.jpg',
-                title: 'Reels / Shorts / TikToks',
-              },
-              {
-                cdnLink:
-                  'https://vz-f20fe40d-4ba.b-cdn.net/d2941540-ba11-4456-a1ea-3daa0fb3aaeb/playlist.m3u8',
-                poster:
-                  'https://vz-f20fe40d-4ba.b-cdn.net/d2941540-ba11-4456-a1ea-3daa0fb3aaeb/thumbnail.jpg',
-                title: 'Explainer Videos',
-              },
-              {
-                cdnLink:
-                  'https://vz-f20fe40d-4ba.b-cdn.net/1e93f1cf-9da5-4eeb-b58a-f54917276278/playlist.m3u8',
-                poster:
-                  'https://vz-f20fe40d-4ba.b-cdn.net/1e93f1cf-9da5-4eeb-b58a-f54917276278/thumbnail.jpg',
-                title: 'Reel Promotions',
-              },
-              {
-                cdnLink:
-                  'https://vz-f20fe40d-4ba.b-cdn.net/d55bb308-0001-4e46-a89e-e26f9d43c43c/playlist.m3u8',
-                poster:
-                  'https://vz-f20fe40d-4ba.b-cdn.net/d55bb308-0001-4e46-a89e-e26f9d43c43c/thumbnail.jpg',
-                title: 'YouTube Video Editing',
-              },
-              {
-                cdnLink:
-                  'https://vz-f20fe40d-4ba.b-cdn.net/5652979e-fdf2-44fc-9744-345727504dcf/playlist.m3u8',
-                poster:
-                  'https://vz-f20fe40d-4ba.b-cdn.net/5652979e-fdf2-44fc-9744-345727504dcf/thumbnail.jpg',
-                title: 'Reels / Shorts / TikToks',
-              },
-              {
-                cdnLink:
-                  'https://vz-f20fe40d-4ba.b-cdn.net/fd3e7f79-5475-4ffa-96eb-f5071978d152/playlist.m3u8',
-                poster:
-                  'https://vz-f20fe40d-4ba.b-cdn.net/fd3e7f79-5475-4ffa-96eb-f5071978d152/thumbnail.jpg',
-                title: 'Explainer Videos',
-              },
-              {
-                cdnLink:
-                  'https://vz-f20fe40d-4ba.b-cdn.net/4d027d07-3139-4168-880b-af7be1de60f7/playlist.m3u8',
-                poster:
-                  'https://vz-f20fe40d-4ba.b-cdn.net/4d027d07-3139-4168-880b-af7be1de60f7/thumbnail.jpg',
-                title: 'Reel Promotions',
-              },
-              {
-                cdnLink:
-                  'https://vz-f20fe40d-4ba.b-cdn.net/46388757-1b6d-4df7-a6b5-f0131c5a3a20/playlist.m3u8',
-                poster:
-                  'https://vz-f20fe40d-4ba.b-cdn.net/46388757-1b6d-4df7-a6b5-f0131c5a3a20/thumbnail.jpg',
-                title: 'Explainer Videos',
-              },
-              {
-                cdnLink:
-                  'https://vz-f20fe40d-4ba.b-cdn.net/373ee54f-1231-4f27-84db-9f1c4ad5ff17/playlist.m3u8',
-                poster:
-                  'https://vz-f20fe40d-4ba.b-cdn.net/373ee54f-1231-4f27-84db-9f1c4ad5ff17/thumbnail.jpg',
-                title: 'Reel Promotions',
-              },
-            ]}
+            verticalServices={serviceVideos.map(v => ({
+              cdnLink: v.cdnLink || v.src || '',
+              poster: v.poster || v.thumbnail || '',
+              title: v.title || '',
+            }))}
             horizontalServices={[]}
             cdn={true}
           />
@@ -466,7 +543,7 @@ audiences, build trust, and drive real results."
             {/* Pricing Card */}
             <Card
               title="Video Editing"
-              prices={PRICES.Video} // 👈 full pricing tiers
+              prices={pricesObj.Video}
               description="Tailored for agencies, creators & brands who outsource video editing, from reels and long-form edits to ads, promos & more."
               ribbon="value"
               firstFeature="Unlimited Video Requests"

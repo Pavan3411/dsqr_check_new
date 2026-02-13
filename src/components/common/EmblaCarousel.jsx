@@ -328,8 +328,7 @@ useEffect(() => {
   return (
     <div
       className="embla__slide flex-shrink-0 p-0"
-      key={item?.id ?? idx}
-      style={{ minWidth: '300px' }}
+key={`${item?.id || item?._id || 'slide'}-${idx}`}      style={{ minWidth: '300px' }}
     >
       <div className="flex-shrink-0 w-[300px] sm:w-[420px] md:w-[450px] bg-[#1e1e1e] rounded-2xl p-4 flex gap-3 mr-6 relative">
         

@@ -11,8 +11,11 @@ import TestimonialSection from '@/components/common/Testimonial'
 import WhySection from '@/components/common/why'
 import WorkProcess from '@/components/common/workProcess'
 import { useCurrency } from '@/components/hooks/useCurrency'
-import { PRICES, buildCheckoutLink } from '@/components/constants/pricing'
-import { useRef } from 'react'
+import {
+  mapApiPricingToStructure,
+  buildCheckoutLink,
+} from '@/components/constants/pricing'
+import { useRef, useEffect, useState } from 'react'
 import ScrollingFooterBanner from '../../components/common/ScrollingFooterBanner'
 import { useAnimatedBackground } from '../../components/hooks/useAnimatedBackground'
 import { motion } from 'framer-motion'
@@ -110,6 +113,8 @@ const AI_WORKFLOW = [
   },
 ]
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'
+
 export default function Ai_Lap() {
   const currency = useCurrency()
   const containerRef = useRef(null) // Ref for the whole page container
@@ -117,11 +122,83 @@ export default function Ai_Lap() {
   const blackSectionEndRef = useRef(null) // Ref for the end of the black section
   const startShowingBannerRef = useRef(null)
   const stopShowingBannerRef = useRef(null)
+  const [marqueeImages, setMarqueeImages] = useState([])
   const { backgroundColor, textColor } = useAnimatedBackground({
     startRef: blackSectionStartRef,
     endRef: blackSectionEndRef,
   })
-  const aiPrices = { USD: 1773, CAD: 2473 } // 👈 hardcode or fetch
+  const [verticalServices, setVerticalServices] = useState([])
+  useEffect(() => {
+    fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/admin/media-items/ai/service-offered`,
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) setVerticalServices(data.data)
+        console.log('Fetched vertical services:', data.data)
+      })
+  }, [])
+  useEffect(() => {
+    console.log('Fetching marquee images from API...')
+    fetch(
+      `${API_BASE_URL}/api/admin/media-items/category/ai_lab?subsection=primary_graphics`,
+      { credentials: 'include' },
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        console.log('API response:', data)
+        if (data.success && Array.isArray(data.data)) {
+          setMarqueeImages(data.data)
+          console.log('Fetched marquee images:', data.data)
+        } else {
+          setMarqueeImages([])
+        }
+      })
+      .catch(() => setMarqueeImages([]))
+      .finally(() => setLoading(false))
+  }, [])
+  const [pricing, setPricing] = useState(null)
+  const [pricesObj, setPricesObj] = useState({})
+
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/pricing`)
+      .then((res) => res.json())
+      .then((data) => {
+        let mapped = {}
+        if (
+          data &&
+          data.data &&
+          typeof data.data === 'object' &&
+          !Array.isArray(data.data)
+        ) {
+          mapped = data.data
+        } else if (data && Array.isArray(data.data)) {
+          mapped = mapApiPricingToStructure(data.data)
+        }
+        function convertKeysToJS(obj) {
+          if (typeof obj !== 'object' || obj === null) return obj
+          if (Array.isArray(obj)) return obj.map(convertKeysToJS)
+          const newObj = {}
+          for (const key in obj) {
+            const value = obj[key]
+            let newKey = key
+            if (!isNaN(key) && key.trim() !== '') {
+              newKey = Number(key)
+            } else if (/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(key)) {
+              newKey = key
+            }
+            newObj[newKey] = convertKeysToJS(value)
+          }
+          return newObj
+        }
+        if (Object.keys(mapped).length) {
+          setPricesObj(convertKeysToJS(mapped))
+        }
+        setPricing(data)
+      })
+      .catch((err) => console.error(err))
+  }, [])
+
   return (
     <div ref={containerRef} className="relative bg-primary">
       {/* B. Add the fixed background element that will change color */}
@@ -139,64 +216,65 @@ export default function Ai_Lap() {
         <div ref={blackSectionStartRef} className="bg-transparent">
           <ServicesOffered
             cdn={true} // ✅ added here as component-level prop
-            verticalServices={[
-              {
-                cdnLink:
-                  'https://vz-f20fe40d-4ba.b-cdn.net/45bcb1b1-b54f-42d8-8783-5b2083c66e3e/playlist.m3u8',
-                poster:
-                  'https://vz-f20fe40d-4ba.b-cdn.net/45bcb1b1-b54f-42d8-8783-5b2083c66e3e/thumbnail.jpg',
-                title: 'YouTube Video Editing',
-              },
-              {
-                cdnLink:
-                  'https://vz-f20fe40d-4ba.b-cdn.net/dbb44a81-5177-4286-bb69-627dd83c4bc2/playlist.m3u8',
-                poster:
-                  'https://vz-f20fe40d-4ba.b-cdn.net/dbb44a81-5177-4286-bb69-627dd83c4bc2/thumbnail.jpg',
-                title: 'Reels / Shorts / TikToks',
-              },
-              {
-                cdnLink:
-                  'https://vz-f20fe40d-4ba.b-cdn.net/75b7e4d0-f50b-4b75-bef0-2787aaf29f95/playlist.m3u8',
-                poster:
-                  'https://vz-f20fe40d-4ba.b-cdn.net/75b7e4d0-f50b-4b75-bef0-2787aaf29f95/thumbnail.jpg',
-                title: 'Explainer Videos',
-              },
-              {
-                cdnLink:
-                  'https://vz-f20fe40d-4ba.b-cdn.net/0075cedb-79f4-4875-a36a-f56d736d7da0/playlist.m3u8',
-                poster:
-                  'https://vz-f20fe40d-4ba.b-cdn.net/0075cedb-79f4-4875-a36a-f56d736d7da0/thumbnail.jpg',
-                title: 'Reel Promotions',
-              },
-              {
-                cdnLink:
-                  'https://vz-f20fe40d-4ba.b-cdn.net/ff1bb0c6-4bfc-4231-9eb4-03c6840bc304/playlist.m3u8',
-                poster:
-                  'https://vz-f20fe40d-4ba.b-cdn.net/ff1bb0c6-4bfc-4231-9eb4-03c6840bc304/thumbnail.jpg',
-                title: 'YouTube Video Editing',
-              },
-              {
-                cdnLink:
-                  'https://vz-f20fe40d-4ba.b-cdn.net/9ad0ae45-b949-4a1d-8dc5-8d18c06ede1e/playlist.m3u8',
-                poster:
-                  'https://vz-f20fe40d-4ba.b-cdn.net/9ad0ae45-b949-4a1d-8dc5-8d18c06ede1e/thumbnail.jpg',
-                title: 'Reels / Shorts / TikToks',
-              },
-              {
-                cdnLink:
-                  'https://vz-f20fe40d-4ba.b-cdn.net/1929c641-e3af-4bb7-b40e-b94621c384b4/playlist.m3u8',
-                poster:
-                  'https://vz-f20fe40d-4ba.b-cdn.net/1929c641-e3af-4bb7-b40e-b94621c384b4/thumbnail.jpg',
-                title: 'Reel Promotions',
-              },
-              {
-                cdnLink:
-                  'https://vz-f20fe40d-4ba.b-cdn.net/8faad0bf-f0a1-434e-b332-75bed6fa0b4c/playlist.m3u8',
-                poster:
-                  'https://vz-f20fe40d-4ba.b-cdn.net/8faad0bf-f0a1-434e-b332-75bed6fa0b4c/thumbnail.jpg',
-                title: 'Explainer Videos',
-              },
-            ]}
+            verticalServices={verticalServices}
+            // verticalServices={[
+            //   {
+            //     cdnLink:
+            //       'https://vz-f20fe40d-4ba.b-cdn.net/45bcb1b1-b54f-42d8-8783-5b2083c66e3e/playlist.m3u8',
+            //     poster:
+            //       'https://vz-f20fe40d-4ba.b-cdn.net/45bcb1b1-b54f-42d8-8783-5b2083c66e3e/thumbnail.jpg',
+            //     title: 'YouTube Video Editing',
+            //   },
+            //   {
+            //     cdnLink:
+            //       'https://vz-f20fe40d-4ba.b-cdn.net/dbb44a81-5177-4286-bb69-627dd83c4bc2/playlist.m3u8',
+            //     poster:
+            //       'https://vz-f20fe40d-4ba.b-cdn.net/dbb44a81-5177-4286-bb69-627dd83c4bc2/thumbnail.jpg',
+            //     title: 'Reels / Shorts / TikToks',
+            //   },
+            //   {
+            //     cdnLink:
+            //       'https://vz-f20fe40d-4ba.b-cdn.net/75b7e4d0-f50b-4b75-bef0-2787aaf29f95/playlist.m3u8',
+            //     poster:
+            //       'https://vz-f20fe40d-4ba.b-cdn.net/75b7e4d0-f50b-4b75-bef0-2787aaf29f95/thumbnail.jpg',
+            //     title: 'Explainer Videos',
+            //   },
+            //   {
+            //     cdnLink:
+            //       'https://vz-f20fe40d-4ba.b-cdn.net/0075cedb-79f4-4875-a36a-f56d736d7da0/playlist.m3u8',
+            //     poster:
+            //       'https://vz-f20fe40d-4ba.b-cdn.net/0075cedb-79f4-4875-a36a-f56d736d7da0/thumbnail.jpg',
+            //     title: 'Reel Promotions',
+            //   },
+            //   {
+            //     cdnLink:
+            //       'https://vz-f20fe40d-4ba.b-cdn.net/ff1bb0c6-4bfc-4231-9eb4-03c6840bc304/playlist.m3u8',
+            //     poster:
+            //       'https://vz-f20fe40d-4ba.b-cdn.net/ff1bb0c6-4bfc-4231-9eb4-03c6840bc304/thumbnail.jpg',
+            //     title: 'YouTube Video Editing',
+            //   },
+            //   {
+            //     cdnLink:
+            //       'https://vz-f20fe40d-4ba.b-cdn.net/9ad0ae45-b949-4a1d-8dc5-8d18c06ede1e/playlist.m3u8',
+            //     poster:
+            //       'https://vz-f20fe40d-4ba.b-cdn.net/9ad0ae45-b949-4a1d-8dc5-8d18c06ede1e/thumbnail.jpg',
+            //     title: 'Reels / Shorts / TikToks',
+            //   },
+            //   {
+            //     cdnLink:
+            //       'https://vz-f20fe40d-4ba.b-cdn.net/1929c641-e3af-4bb7-b40e-b94621c384b4/playlist.m3u8',
+            //     poster:
+            //       'https://vz-f20fe40d-4ba.b-cdn.net/1929c641-e3af-4bb7-b40e-b94621c384b4/thumbnail.jpg',
+            //     title: 'Reel Promotions',
+            //   },
+            //   {
+            //     cdnLink:
+            //       'https://vz-f20fe40d-4ba.b-cdn.net/8faad0bf-f0a1-434e-b332-75bed6fa0b4c/playlist.m3u8',
+            //     poster:
+            //       'https://vz-f20fe40d-4ba.b-cdn.net/8faad0bf-f0a1-434e-b332-75bed6fa0b4c/thumbnail.jpg',
+            //     title: 'Explainer Videos',
+            //   },
+            // ]}
             horizontalServices={[]}
             heading={{
               title1: 'Powering Growth with Smart,',
@@ -253,10 +331,9 @@ export default function Ai_Lap() {
             {/* Pricing Card */}
             <Card
               title="AI Lab"
-              prices={PRICES.AI} // ✅ uses AI pricing
-              getCheckoutLink={
-                (activeRequest, fastDelivery) =>
-                  buildCheckoutLink('AI', activeRequest, fastDelivery) // ✅ AI plan
+              prices={pricesObj.AI}
+              getCheckoutLink={(activeRequest, fastDelivery) =>
+                buildCheckoutLink('AI', activeRequest, fastDelivery)
               }
               description="Ideal for entrepreneurs and businesses to outsource all content needs with AI-generated solutions."
               ribbon="value"

@@ -86,6 +86,7 @@ export default function VideoSection() {
   const [isPlaying, setIsPlaying] = useState(false)
   useScrollOnLoad('book-call') // 👈 works here
   const [open, setOpen] = useState(false)
+  const [serviceVideos, setServiceVideos] = useState([])
   const startShowingBannerRef = useRef(null)
   const stopShowingBannerRef = useRef(null)
   const containerRef = useRef(null) // Ref for the whole page container
@@ -112,7 +113,23 @@ export default function VideoSection() {
       setIsMuted(true)
     }
   }
-
+ // Fetch service videos
+  useEffect(() => {
+    fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/admin/media-items/category/services_offered?subsection=home-service-offered`,
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        console.log('Service API response:', data)
+        if (data && Array.isArray(data.data)) {
+          setServiceVideos(data.data)
+          console.log('Service Videos:', data.data)
+        }
+      })
+      .catch((err) => {
+        console.error('Service API error:', err)
+      })
+  }, [])
   const router = useRouter()
   const handlePlan = () => {
     // If already on a page that has BookCall component
@@ -153,78 +170,83 @@ export default function VideoSection() {
         <div ref={blackSectionStartRef} className="bg-transparent">
           <ServicesOffered
             cdn={true}
-            verticalServices={[
-  {
-    cdnLink:
-      'https://vz-0822fa3c-02f.b-cdn.net/da36c394-f732-4bde-b1f3-4892029cc555/playlist.m3u8',
-    poster:
-      'https://vz-0822fa3c-02f.b-cdn.net/da36c394-f732-4bde-b1f3-4892029cc555/thumbnail.jpg',
-    title: 'AI Reel 1',
-  },
-  {
-    cdnLink:
-      'https://vz-0822fa3c-02f.b-cdn.net/faf37eba-c915-4dba-9e94-3b02a3f15e36/playlist.m3u8',
-    poster:
-      'https://vz-0822fa3c-02f.b-cdn.net/faf37eba-c915-4dba-9e94-3b02a3f15e36/thumbnail.jpg',
-    title: 'AI Reel 2',
-  },
-  {
-    cdnLink:
-      'https://vz-0822fa3c-02f.b-cdn.net/776da546-81c9-4653-bebc-f2aa3e86ceba/playlist.m3u8',
-    poster:
-      'https://vz-0822fa3c-02f.b-cdn.net/776da546-81c9-4653-bebc-f2aa3e86ceba/thumbnail.jpg',
-    title: 'AI Reel 3',
-  },
-  {
-    cdnLink:
-      'https://vz-0822fa3c-02f.b-cdn.net/bfeb3d10-dba8-46bf-923c-c4275d0ca361/playlist.m3u8',
-    poster:
-      'https://vz-0822fa3c-02f.b-cdn.net/bfeb3d10-dba8-46bf-923c-c4275d0ca361/thumbnail.jpg',
-    title: 'AI Reel 4',
-  },
-  {
-    cdnLink:
-      'https://vz-0822fa3c-02f.b-cdn.net/775e0f3e-481b-4d6d-bbc5-a0f6fc55813a/playlist.m3u8',
-    poster:
-      'https://vz-0822fa3c-02f.b-cdn.net/775e0f3e-481b-4d6d-bbc5-a0f6fc55813a/thumbnail.jpg',
-    title: 'AI Reel 5',
-  },
-  {
-    cdnLink:
-      'https://vz-0822fa3c-02f.b-cdn.net/389ef34f-623b-48b4-8c64-ce62be976483/playlist.m3u8',
-    poster:
-      'https://vz-0822fa3c-02f.b-cdn.net/389ef34f-623b-48b4-8c64-ce62be976483/thumbnail.jpg',
-    title: 'AI Reel 6',
-  },
-  {
-    cdnLink:
-      'https://vz-0822fa3c-02f.b-cdn.net/1dd24349-5a8c-4838-b71d-db4e362a79d3/playlist.m3u8',
-    poster:
-      'https://vz-0822fa3c-02f.b-cdn.net/1dd24349-5a8c-4838-b71d-db4e362a79d3/thumbnail.jpg',
-    title: 'AI Reel 7',
-  },
-  {
-    cdnLink:
-      'https://vz-0822fa3c-02f.b-cdn.net/da761ce2-d075-464d-9a88-38d6570e2ec4/playlist.m3u8',
-    poster:
-      'https://vz-0822fa3c-02f.b-cdn.net/da761ce2-d075-464d-9a88-38d6570e2ec4/thumbnail.jpg',
-    title: 'AI Reel 8',
-  },
-  {
-    cdnLink:
-      'https://vz-0822fa3c-02f.b-cdn.net/c688464c-302f-48d8-8140-48f7b4f091e0/playlist.m3u8',
-    poster:
-      'https://vz-0822fa3c-02f.b-cdn.net/c688464c-302f-48d8-8140-48f7b4f091e0/thumbnail.jpg',
-    title: 'AI Reel 9',
-  },
-  {
-    cdnLink:
-      'https://vz-0822fa3c-02f.b-cdn.net/d36a01ac-a81b-4565-b10b-58da7b0cf0b8/playlist.m3u8',
-    poster:
-      'https://vz-0822fa3c-02f.b-cdn.net/d36a01ac-a81b-4565-b10b-58da7b0cf0b8/thumbnail.jpg',
-    title: 'AI Reel 10',
-  },
-]}
+//             verticalServices={[
+//   {
+//     cdnLink:
+//       'https://vz-0822fa3c-02f.b-cdn.net/da36c394-f732-4bde-b1f3-4892029cc555/playlist.m3u8',
+//     poster:
+//       'https://vz-0822fa3c-02f.b-cdn.net/da36c394-f732-4bde-b1f3-4892029cc555/thumbnail.jpg',
+//     title: 'AI Reel 1',
+//   },
+//   {
+//     cdnLink:
+//       'https://vz-0822fa3c-02f.b-cdn.net/faf37eba-c915-4dba-9e94-3b02a3f15e36/playlist.m3u8',
+//     poster:
+//       'https://vz-0822fa3c-02f.b-cdn.net/faf37eba-c915-4dba-9e94-3b02a3f15e36/thumbnail.jpg',
+//     title: 'AI Reel 2',
+//   },
+//   {
+//     cdnLink:
+//       'https://vz-0822fa3c-02f.b-cdn.net/776da546-81c9-4653-bebc-f2aa3e86ceba/playlist.m3u8',
+//     poster:
+//       'https://vz-0822fa3c-02f.b-cdn.net/776da546-81c9-4653-bebc-f2aa3e86ceba/thumbnail.jpg',
+//     title: 'AI Reel 3',
+//   },
+//   {
+//     cdnLink:
+//       'https://vz-0822fa3c-02f.b-cdn.net/bfeb3d10-dba8-46bf-923c-c4275d0ca361/playlist.m3u8',
+//     poster:
+//       'https://vz-0822fa3c-02f.b-cdn.net/bfeb3d10-dba8-46bf-923c-c4275d0ca361/thumbnail.jpg',
+//     title: 'AI Reel 4',
+//   },
+//   {
+//     cdnLink:
+//       'https://vz-0822fa3c-02f.b-cdn.net/775e0f3e-481b-4d6d-bbc5-a0f6fc55813a/playlist.m3u8',
+//     poster:
+//       'https://vz-0822fa3c-02f.b-cdn.net/775e0f3e-481b-4d6d-bbc5-a0f6fc55813a/thumbnail.jpg',
+//     title: 'AI Reel 5',
+//   },
+//   {
+//     cdnLink:
+//       'https://vz-0822fa3c-02f.b-cdn.net/389ef34f-623b-48b4-8c64-ce62be976483/playlist.m3u8',
+//     poster:
+//       'https://vz-0822fa3c-02f.b-cdn.net/389ef34f-623b-48b4-8c64-ce62be976483/thumbnail.jpg',
+//     title: 'AI Reel 6',
+//   },
+//   {
+//     cdnLink:
+//       'https://vz-0822fa3c-02f.b-cdn.net/1dd24349-5a8c-4838-b71d-db4e362a79d3/playlist.m3u8',
+//     poster:
+//       'https://vz-0822fa3c-02f.b-cdn.net/1dd24349-5a8c-4838-b71d-db4e362a79d3/thumbnail.jpg',
+//     title: 'AI Reel 7',
+//   },
+//   {
+//     cdnLink:
+//       'https://vz-0822fa3c-02f.b-cdn.net/da761ce2-d075-464d-9a88-38d6570e2ec4/playlist.m3u8',
+//     poster:
+//       'https://vz-0822fa3c-02f.b-cdn.net/da761ce2-d075-464d-9a88-38d6570e2ec4/thumbnail.jpg',
+//     title: 'AI Reel 8',
+//   },
+//   {
+//     cdnLink:
+//       'https://vz-0822fa3c-02f.b-cdn.net/c688464c-302f-48d8-8140-48f7b4f091e0/playlist.m3u8',
+//     poster:
+//       'https://vz-0822fa3c-02f.b-cdn.net/c688464c-302f-48d8-8140-48f7b4f091e0/thumbnail.jpg',
+//     title: 'AI Reel 9',
+//   },
+//   {
+//     cdnLink:
+//       'https://vz-0822fa3c-02f.b-cdn.net/d36a01ac-a81b-4565-b10b-58da7b0cf0b8/playlist.m3u8',
+//     poster:
+//       'https://vz-0822fa3c-02f.b-cdn.net/d36a01ac-a81b-4565-b10b-58da7b0cf0b8/thumbnail.jpg',
+//     title: 'AI Reel 10',
+//   },
+// ]}
+ verticalServices={serviceVideos.map(v => ({
+              cdnLink: v.cdnLink || v.src || '',
+              poster: v.poster || v.thumbnail || '',
+              title: v.title || '',
+            }))}
             horizontalServices={[]}
             heading={{
               title1: 'Everything You Need,',

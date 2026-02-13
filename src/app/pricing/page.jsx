@@ -25,8 +25,10 @@ import {
 } from '@/components/ui/select'
 import { useMotionValue, useSpring } from 'framer-motion'
 import { useCurrency } from '@/components/hooks/useCurrency'
-import { PRICES, buildCheckoutLink } from '@/components/constants/pricing'
-// pricingFaqData.js
+import {
+  mapApiPricingToStructure,
+  buildCheckoutLink,
+} from '@/components/constants/pricing'
 
 export const pricingFaqData = [
   {
@@ -219,7 +221,7 @@ function AnimatedNumber({ value, formatter }) {
   const motionValue = useMotionValue(value)
   const springValue = useSpring(motionValue, { stiffness: 200, damping: 20 })
   const displayValue = useTransform(springValue, (latest) =>
-    formatter(Math.round(latest))
+    formatter(Math.round(latest)),
   )
 
   useEffect(() => {
@@ -229,7 +231,7 @@ function AnimatedNumber({ value, formatter }) {
   return <motion.span>{displayValue}</motion.span>
 }
 
-export default function PricingStack() {
+export default function PricingPage() {
   const [activeTab, setActiveTab] = useState('Graphics')
   const [active, setActive] = useState(2) // 0: Graphic, 1: Video, 2: Both (front by default)
   const currency = useCurrency()
@@ -267,12 +269,13 @@ export default function PricingStack() {
       </span>
     )
   }
-
+  const [pricing, setPricing] = useState(null)
+  const [pricesObj, setPricesObj] = useState({})
   // depth: 0 = front, 1 = middle, 2 = back (based on active index)
   const cards = [
     {
       key: 'Graphic',
-      prices: PRICES.Graphic,
+      prices: pricesObj.Graphic,
       title: 'Graphic Design',
       description:
         'Perfect for agencies, marketers & startups with ongoing design needs, from ads and carousels to social posts & more.',
@@ -280,7 +283,7 @@ export default function PricingStack() {
     },
     {
       key: 'Video',
-      prices: PRICES.Video,
+      prices: pricesObj.Video,
       title: 'Video Editing',
       description:
         'Tailored for agencies, creators & brands who outsource video editing, from reels and long-form edits to ads, promos & more.',
@@ -288,7 +291,7 @@ export default function PricingStack() {
     },
     {
       key: 'Both',
-      prices: PRICES.Both,
+      prices: pricesObj.Both,
       title: 'Graphic + Video',
       description:
         'All-in-One for agencies, creators & brands unlimited videos and graphics, from ads and posts to long-form edits & more.',
@@ -337,14 +340,14 @@ export default function PricingStack() {
   // helpers
   const updateCard = (i, patch) =>
     setCompareCards((prev) =>
-      prev.map((c, idx) => (idx === i ? { ...c, ...patch } : c))
+      prev.map((c, idx) => (idx === i ? { ...c, ...patch } : c)),
     )
 
-// format the numeric part only (no $). currency is shown separately in JSX
-const fmt = (n) =>
-  new Intl.NumberFormat('en-US', {
-    maximumFractionDigits: 0,
-  }).format(n)
+  // format the numeric part only (no $). currency is shown separately in JSX
+  const fmt = (n) =>
+    new Intl.NumberFormat('en-US', {
+      maximumFractionDigits: 0,
+    }).format(n)
 
   const container = useRef(null)
   const horizWrapRef = useRef(null) // pinned viewport (desktop)
@@ -355,7 +358,7 @@ const fmt = (n) =>
   // returns a number price or null (for "3+" or missing data)
   const getTotalSimple = (plan, requests, fast) => {
     if (requests === '3+') return null
-    const p = PRICES?.[plan]?.[requests]
+    const p = pricesObj?.[plan]?.[requests]
     if (!p) return null
     const chosen = fast ? p.fast : p.base
     return chosen?.[cur] ?? chosen?.USD ?? null
@@ -370,8 +373,58 @@ const fmt = (n) =>
     }
   }
 
+  // Pricing state
+
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/pricing`)
+      .then((res) => res.json())
+      .then((data) => {
+        let mapped = {}
+        if (
+          data &&
+          data.data &&
+          typeof data.data === 'object' &&
+          !Array.isArray(data.data)
+        ) {
+          mapped = data.data
+        } else if (data && Array.isArray(data.data)) {
+          mapped = mapApiPricingToStructure(data.data)
+        }
+        // Convert all keys to valid JS identifiers or numbers
+        function convertKeysToJS(obj) {
+          if (typeof obj !== 'object' || obj === null) return obj
+          if (Array.isArray(obj)) return obj.map(convertKeysToJS)
+          const newObj = {}
+          for (const key in obj) {
+            const value = obj[key]
+            let newKey = key
+            if (!isNaN(key) && key.trim() !== '') {
+              newKey = Number(key)
+            } else if (/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(key)) {
+              newKey = key
+            }
+            newObj[newKey] = convertKeysToJS(value)
+          }
+          return newObj
+        }
+        if (Object.keys(mapped).length) {
+          setPricesObj(convertKeysToJS(mapped))
+        }
+        setPricing(data)
+      })
+      .catch((err) => console.error(err))
+  }, [])
+
+  // Render
   return (
     <>
+      {/* Optionally show raw API response for debugging */}
+      {/* {pricing && (
+        <div style={{marginBottom:24}}>
+          <h4>Raw API Response:</h4>
+          <pre style={{fontSize:12, background:'#f6f6f6', padding:8}}>{JSON.stringify(pricing, null, 2)}</pre>
+        </div>
+      )} */}
       <section
         className="py-12 px-4 md:px-8 lg:px-16"
         onKeyDown={handleKey}
@@ -510,19 +563,19 @@ const fmt = (n) =>
       <section className="px-6 md:px-12 lg:px-20 py-6 pt-12 mt-24 md:mt-0 max-w-7xl mx-auto">
         {/* Toggle */}
         <div className="flex justify-center">
-  <button
-    onClick={() => setCompareOpen((v) => !v)}
-    className="relative overflow-hidden rounded-full bg-[var(--color-primary)] px-5 py-2 text-sm font-semibold shadow hover:shadow-md transition group cursor-pointer"
-  >
-    {compareOpen ? 'Hide Comparison ↑' : 'Compare Plans ↓'}
+          <button
+            onClick={() => setCompareOpen((v) => !v)}
+            className="relative overflow-hidden rounded-full bg-[var(--color-primary)] px-5 py-2 text-sm font-semibold shadow hover:shadow-md transition group cursor-pointer"
+          >
+            {compareOpen ? 'Hide Comparison ↑' : 'Compare Plans ↓'}
 
-    {/* Shiny effect */}
-    <span
-      className="absolute inset-0 translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent
+            {/* Shiny effect */}
+            <span
+              className="absolute inset-0 translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent
                  skew-x-[-20deg] transition-transform duration-700 ease-in-out group-hover:translate-x-full"
-    />
-  </button>
-</div>
+            />
+          </button>
+        </div>
 
         {/* Compare – animated mount/unmount */}
         <AnimatePresence initial={false}>
@@ -608,7 +661,7 @@ const fmt = (n) =>
                                 // iOS fallback: ensure focus after tap
                                 setTimeout(
                                   () => selectRefs.current[i]?.focus(),
-                                  0
+                                  0,
                                 )
                               }}
                             >
@@ -631,19 +684,23 @@ const fmt = (n) =>
                             <p className="text-2xl font-bold">Custom</p>
                           ) : (
                             <div className="mt-3 flex leading-tight">
-  <div className="flex items-center gap-1">
-    <span className="text-3xl font-bold">{currency}</span>
-    <p className="text-3xl font-bold">
-      <AnimatedNumber value={total} formatter={fmt} />
-    </p>
-    <p className="text-xs text-black/90 flex leading-3 ">
-              {' '}
-              Per <br />
-              month
-            </p>
-  </div>
-  
-</div>
+                              <div className="flex items-center gap-1">
+                                <span className="text-3xl font-bold">
+                                  {currency}
+                                </span>
+                                <p className="text-3xl font-bold">
+                                  <AnimatedNumber
+                                    value={total}
+                                    formatter={fmt}
+                                  />
+                                </p>
+                                <p className="text-xs text-black/90 flex leading-3 ">
+                                  {' '}
+                                  Per <br />
+                                  month
+                                </p>
+                              </div>
+                            </div>
                           )}
 
                           {/* Subscribe */}
@@ -683,19 +740,18 @@ const fmt = (n) =>
                       >
                         {/* Plan (shadcn Select) */}
                         <Select
-  value={c.plan}
-  onValueChange={(v) => updateCard(i, { plan: v })}
->
-  <SelectTrigger className="w-full rounded-full bg-primary text-sm h-[32px_!important]  px-3 border">
-    <SelectValue placeholder="Select a plan" />
-  </SelectTrigger>
-  <SelectContent>
-    <SelectItem value="Graphic">Graphic</SelectItem>
-    <SelectItem value="Video">Video</SelectItem>
-    <SelectItem value="Both">Both</SelectItem>
-  </SelectContent>
-</Select>
-
+                          value={c.plan}
+                          onValueChange={(v) => updateCard(i, { plan: v })}
+                        >
+                          <SelectTrigger className="w-full rounded-full bg-primary text-sm h-[32px_!important]  px-3 border">
+                            <SelectValue placeholder="Select a plan" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Graphic">Graphic</SelectItem>
+                            <SelectItem value="Video">Video</SelectItem>
+                            <SelectItem value="Both">Both</SelectItem>
+                          </SelectContent>
+                        </Select>
 
                         {/* Active Request */}
                         <div className="flex items-center gap-2">
@@ -739,15 +795,17 @@ const fmt = (n) =>
                         {c.requests === '3+' ? (
                           <p className="text-2xl font-bold">Custom</p>
                         ) : (
-                        <div className="mt-3 flex items-center gap-1">
-  <span className="text-3xl font-bold">{currency}</span>
-  <span className="text-3xl font-bold">
-    <AnimatedNumber value={total} formatter={fmt} />
-  </span>
-  <p className="text-xs flex flex-col leading-3">
-    Per <br /> month
-  </p>
-</div>
+                          <div className="mt-3 flex items-center gap-1">
+                            <span className="text-3xl font-bold">
+                              {currency}
+                            </span>
+                            <span className="text-3xl font-bold">
+                              <AnimatedNumber value={total} formatter={fmt} />
+                            </span>
+                            <p className="text-xs flex flex-col leading-3">
+                              Per <br /> month
+                            </p>
+                          </div>
                         )}
 
                         {/* Subscribe */}
@@ -792,7 +850,7 @@ const fmt = (n) =>
             <Card
               title="AI Lab"
               button={false}
-              prices={PRICES.AI} // ✅ uses AI pricing
+              prices={pricesObj.AI} // ✅ uses AI pricing
               getCheckoutLink={
                 (activeRequest, fastDelivery) =>
                   buildCheckoutLink('AI', activeRequest, fastDelivery) // ✅ AI plan

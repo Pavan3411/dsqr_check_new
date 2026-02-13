@@ -1,12 +1,53 @@
 'use client'
 
 import Image from 'next/image'
-import { useState, useMemo, useEffect, useRef } from 'react'
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { ChevronDown } from 'lucide-react'
-import { sections } from '../constants/featuredWorkData'
 import { motion, AnimatePresence } from 'framer-motion'
 import Hls from 'hls.js'
-import { useSearchParams } from 'next/navigation' // 👈 1. IMPORT THIS
+import { useSearchParams } from 'next/navigation'
+
+// 1. Structure for the Sidebar/Menu Navigation
+const FEATURED_PROJECTS_STRUCTURE = {
+  Graphics: [
+    'Ad creatives',
+    'Ai generated graphics',
+    'App graphic',
+    'Blog thumbnails',
+    'Brand Kits & Assets',
+    'Custom Icons',
+    'Ebook graphics for website',
+    'Infographics',
+    'Pdfs',
+    'Presentations',
+    'Slide decks',
+    'Social media graphics',
+    'Web graphic',
+  ],
+  Videos: [
+    'Montage style',
+    'Spanish Videos',
+    'Animation AI videos',
+    'Gym & Fitness',
+    'Text Based',
+    'Talking Heads',
+    'Product Showcase',
+    'Podcast Intro',
+    'Long form edits',
+    'Digital Course VSL',
+  ],
+  'AI Lab': [
+    'Ai Assets',
+    'AI generated images',
+    'Product Placement',
+    'AI B-rolls',
+    'AI Voiceover',
+    'AI Clone Creation',
+    'AI-Powered Video',
+    'AI Videos Ad Creation',
+    'AI UGC Ads/Content',
+  ],
+}
 
 function GridItem({ item }) {
   const videoRef = useRef(null)
@@ -14,31 +55,27 @@ function GridItem({ item }) {
   const [showVideo, setShowVideo] = useState(false)
 
   useEffect(() => {
-    // Only run this logic when the video is supposed to be shown
     if (item.type !== 'video' || !showVideo) return
 
     const video = videoRef.current
     if (!video) return
 
-    // Standard HLS setup for .m3u8 files
     if (item.src.includes('.m3u8') && Hls.isSupported()) {
       const hls = new Hls()
       hlsRef.current = hls
       hls.loadSource(item.src)
       hls.attachMedia(video)
     } else {
-      // Fallback for regular MP4 files or Safari
       video.src = item.src
     }
 
-    // Cleanup when the component is unmounted or hidden
     return () => {
       if (hlsRef.current) {
         hlsRef.current.destroy()
         hlsRef.current = null
       }
     }
-  }, [item.src, item.type, showVideo]) // Effect runs when showVideo becomes true
+  }, [item.src, item.type, showVideo])
 
   return (
     <div
@@ -47,7 +84,6 @@ function GridItem({ item }) {
     >
       {item.type === 'video' ? (
         <div className="relative overflow-hidden">
-          {/* 1. The Poster Image (visible initially) */}
           {!showVideo && (
             <div
               className="relative cursor-pointer"
@@ -59,11 +95,8 @@ function GridItem({ item }) {
                 className="w-full h-auto object-cover"
                 loading="lazy"
               />
-              {/* Play button overlay that shows the poster behind it */}
               <div className="absolute inset-0 flex items-center justify-center">
-                {/* This div creates the semi-transparent circular background */}
                 <div className="bg-[var(--color-primary)] bg-opacity-50 rounded-full p-1 transition-transform group-hover:scale-110">
-                  {/* A clearer SVG for the play icon. The outer circle is handled by the div. */}
                   <svg
                     className="w-10 h-8 text-white"
                     fill="currentColor"
@@ -82,21 +115,19 @@ function GridItem({ item }) {
             </div>
           )}
 
-          {/* 2. The Video Player (visible after click) */}
           {showVideo && (
             <video
               ref={videoRef}
               poster={item.poster}
-              controls // <-- THIS SHOWS THE BROWSER'S BUILT-IN CONTROLS
-              autoPlay // <-- THIS MAKES IT PLAY ON CLICK
-              muted // <-- Required for autoplay to work reliably
+              controls
+              autoPlay
+              muted
               playsInline
               className="w-full h-auto object-cover"
             />
           )}
         </div>
       ) : (
-        // This part for regular images remains the same
         <div className="relative overflow-hidden">
           <img
             src={item.src || item.image}
@@ -114,39 +145,83 @@ function GridItem({ item }) {
     </div>
   )
 }
+
 export default function FeaturedProjects() {
   const [activeTab, setActiveTab] = useState('Videos')
-  const [activeCategory, setActiveCategory] = useState(() => {
-    // initial tab default (safety if sections not loaded yet)
-    const firstCats = Object.keys(sections['Graphics']?.categories || {})
-    return firstCats.length ? firstCats[0] : ''
-  })
-  const searchParams = useSearchParams() // 👈 2. USE THE HOOK
-
+  const [activeCategory, setActiveCategory] = useState('Montage style')
+  const [displayedImages, setDisplayedImages] = useState([])
+  const [isLoading, setIsLoading] = useState(false)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  
+  const searchParams = useSearchParams()
   const contentRef = useRef(null)
 
-  // put this useRef above everything
-  const restored = useRef(false)
+  // 2. Map Frontend Tab Names to Backend Category Slugs
+  const getBackendCategory = useCallback((tab) => {
+    if (tab === 'Videos') return 'test'
+    if (tab === 'Graphics') return 'graphics'
+    if (tab === 'AI Lab') return 'ai_lab'
+    return tab.toLowerCase()
+  }, [])
 
-  // 1️⃣ When mounting: restore from sessionStorage
+// 3. Dynamic Fetching Logic
+useEffect(() => {
+  const fetchMedia = async () => {
+    setIsLoading(true);
+    try {
+      const category = getBackendCategory(activeTab);
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/api/admin/media-items/category/${category}?subsection=${encodeURIComponent(activeCategory)}`;
+      
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Network response was not ok');
+      
+      const jsonResponse = await response.json(); // Rename this for clarity
+
+      // UPDATE THIS LINE: Access the nested .data array from your response
+      const items = (jsonResponse && jsonResponse.success && Array.isArray(jsonResponse.data)) 
+        ? jsonResponse.data 
+        : [];
+
+      // MAP DATA TO MATCH YOUR OLD STRUCTURE
+      const formattedData = items.map((item) => ({
+        ...item,
+        id: item._id || item.id,
+        // Since your API already returns 'src' and 'poster', we just ensure fallbacks
+        src: item.src || item.url || '',
+        poster: item.poster || item.thumbnailUrl || '',
+        type: item.type || (activeTab === 'Graphics' ? 'image' : 'video'),
+        alt: item.alt || item.title || activeCategory
+      }));
+
+      setDisplayedImages(formattedData);
+    } catch (error) {
+      console.error("Failed to fetch projects:", error);
+      setDisplayedImages([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (activeTab && activeCategory) {
+    fetchMedia();
+  }
+}, [activeTab, activeCategory, getBackendCategory]);
+
+  // 4. URL Parameter Handling & Initial Sync
   useEffect(() => {
     const tabFromUrl = searchParams.get('tab')
     const categoryFromUrl = searchParams.get('category')
 
-    // Update state if URL params exist
-    if (tabFromUrl) {
+    if (tabFromUrl && FEATURED_PROJECTS_STRUCTURE[tabFromUrl]) {
       setActiveTab(tabFromUrl)
     }
     if (categoryFromUrl) {
       setActiveCategory(categoryFromUrl)
     }
 
-    // Scroll into view if the URL has params
     if (tabFromUrl || categoryFromUrl) {
       const el = document.getElementById('featured-projects')
       if (el) {
-        // A short delay allows the UI to update before scrolling
         setTimeout(() => {
           el.scrollIntoView({ behavior: 'smooth', block: 'start' })
         }, 100)
@@ -154,57 +229,28 @@ export default function FeaturedProjects() {
     }
   }, [searchParams])
 
-  // 2️⃣ When activeTab changes: if there’s no valid category for that tab, set the first one
+  // 5. Category Syncing when Tab changes
   useEffect(() => {
-    const keys = Object.keys(sections[activeTab]?.categories || {})
-    // if the current category is not in the new tab or we haven’t set anything yet
-    if (!keys.includes(activeCategory)) {
-      setActiveCategory(keys.length ? keys[0] : '')
+    const availableCategories = FEATURED_PROJECTS_STRUCTURE[activeTab] || []
+    if (!availableCategories.includes(activeCategory)) {
+      setActiveCategory(availableCategories[0] || '')
     }
-  }, [activeTab, activeCategory])
-
-  // const categories = [
-  //   "All",
-  //   "Banner Graphics",
-  //   "Brand Videos",
-  //   "Social Media Post",
-  //   "Thumbnail",
-  //   "Pack Design",
-  //   "Product Design",
-  // ]
-  // flattened list of all images for the current tab
-  const allImagesForTab = useMemo(() => {
-    const catObj = sections[activeTab]?.categories || {}
-    return Object.values(catObj).flat()
   }, [activeTab])
-
-  // images to display (filtered by selected subsection)
-  const displayedImages = useMemo(() => {
-    return sections[activeTab]?.categories?.[activeCategory] || []
-  }, [activeTab, activeCategory])
 
   const filterTabs = ['Graphics', 'Videos', 'AI Lab']
 
-  // list of categories (subsections) for the current active tab
   const currentCategories = useMemo(() => {
-    return Object.keys(sections[activeTab]?.categories || {})
+    return FEATURED_PROJECTS_STRUCTURE[activeTab] || []
   }, [activeTab])
 
   const handleSelectCategory = (category) => {
     setActiveCategory(category)
     setIsDropdownOpen(false)
 
-    // wait one frame so DOM/layout updates after React state change
     requestAnimationFrame(() => {
       if (contentRef.current) {
-        contentRef.current.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start',
-        })
-        // If you have a sticky header and want an offset, you can adjust with scrollBy:
         const headerOffset = 200
-        const top =
-          contentRef.current.getBoundingClientRect().top + window.scrollY
+        const top = contentRef.current.getBoundingClientRect().top + window.scrollY
         window.scrollTo({ top: top - headerOffset, behavior: 'smooth' })
       }
     })
@@ -250,14 +296,13 @@ export default function FeaturedProjects() {
                     if (contentRef.current) {
                       const top = contentRef.current.offsetTop
                       window.scrollTo({
-                        top: top - 100, // offset
+                        top: top - 100,
                         behavior: 'smooth',
                       })
                     }
                   }}
                   className="relative px-6 py-2 rounded-full font-medium transition-colors"
                 >
-                  {/* Highlight background that slides between tabs */}
                   {isActive && (
                     <motion.div
                       layoutId="activeTabIndicator"
@@ -288,8 +333,7 @@ export default function FeaturedProjects() {
           ref={contentRef}
           className="relative z-20 flex flex-col lg:flex-row gap-8 items-start md:mt-8"
         >
-          {/* --- 1. DESKTOP-ONLY SIDEBAR --- */}
-          {/* This sidebar is only rendered and visible on large screens */}
+          {/* Sidebar */}
           <div className="hidden lg:block w-64 flex-shrink-0 sticky top-24">
             <div className="bg-[#262626] p-4 rounded-lg">
               <h2 className="text-2xl font-bold mb-6 underline underline-offset-8">
@@ -313,10 +357,9 @@ export default function FeaturedProjects() {
             </div>
           </div>
 
-          {/* --- 2. MAIN CONTENT AREA (GRID & MOBILE DROPDOWN) --- */}
-          {/* This container holds the content for both mobile and desktop */}
+          {/* Main Content */}
           <div className="w-full flex-1">
-            {/* Mobile Dropdown (Now it can be sticky) */}
+            {/* Mobile Dropdown */}
             <div className="lg:hidden w-full z-50 py-4 relative">
               <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -330,7 +373,7 @@ export default function FeaturedProjects() {
                 />
               </button>
               {isDropdownOpen && (
-                <div className="mt-2 bg-[#1f1f1f] rounded-lg shadow-lg overflow-hidden absolute w-full">
+                <div className="mt-2 bg-[#1f1f1f] rounded-lg shadow-lg overflow-hidden absolute w-full z-[70]">
                   {currentCategories.map((category) => (
                     <button
                       key={category}
@@ -351,24 +394,33 @@ export default function FeaturedProjects() {
             {/* Image Grid */}
             <div className="w-full pt-4 lg:pt-0">
               <AnimatePresence mode="wait">
-                <motion.div
-                  key={activeTab + activeCategory}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.35, ease: 'easeInOut' }}
-                  className="w-full"
-                >
-                  <div className="columns-2 sm:columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
-                    {displayedImages.map((item) => (
-                      <GridItem key={item.id} item={item} />
-                    ))}
-                  </div>
-                </motion.div>
+                {isLoading ? (
+                  <motion.div 
+                    initial={{ opacity: 0 }} 
+                    animate={{ opacity: 1 }} 
+                    className="flex justify-center py-20"
+                  >
+                    <div className="w-8 h-8 border-4 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin"></div>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key={activeTab + activeCategory}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.35, ease: 'easeInOut' }}
+                    className="w-full"
+                  >
+                    <div className="columns-2 sm:columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
+                      {displayedImages.map((item) => (
+                        <GridItem key={item.id || item._id} item={item} />
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
               </AnimatePresence>
 
-              {/* Empty state */}
-              {displayedImages.length === 0 && (
+              {!isLoading && displayedImages.length === 0 && (
                 <div className="text-center text-gray-400 mt-12 w-full">
                   <p className="text-lg">No projects found.</p>
                   <p className="text-sm mt-2">

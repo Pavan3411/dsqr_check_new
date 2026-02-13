@@ -71,69 +71,6 @@ export const faqData = [
   },
 ]
 
-const promoImages = [
-  {
-    src: 'https://dsqrstudio.b-cdn.net/Promotional%20Content/DSQR%20Linkedin%20Logo.png?width=800&quality=70&format=webp',
-    alt: 'DSQR LinkedIn Logo',
-    filename: 'DSQR_Promo_Logo_LinkedIn.png',
-  },
-  {
-    src: 'https://dsqrstudio.b-cdn.net/Promotional%20Content/Logo%20Final.png?width=800&quality=70&format=webp',
-    alt: 'DSQR Final Logo',
-    filename: 'DSQR_Promo_Logo_Final.png',
-  },
-  {
-    src: 'https://dsqrstudio.b-cdn.net/Promotional%20Content/LOGO-BLACK%20(1).png?width=800&quality=70&format=webp',
-    alt: 'DSQR Black Logo',
-    filename: 'DSQR_Promo_Logo_Black.png',
-  },
-  {
-    src: 'https://dsqrstudio.b-cdn.net/Promotional%20Content/LOGO-GLOW.png?width=800&quality=70&format=webp',
-    alt: 'DSQR Glow Logo',
-    filename: 'DSQR_Promo_Logo_Glow.png',
-  },
-  {
-    src: 'https://dsqrstudio.b-cdn.net/Promotional%20Content/2%20(2).png?width=800&quality=70&format=webp',
-    alt: 'Promo material 1',
-    filename: 'DSQR_Promo_1.png',
-  },
-  {
-    src: 'https://dsqrstudio.b-cdn.net/Promotional%20Content/3%20(2).png?width=800&quality=70&format=webp',
-    alt: 'Promo material 2',
-    filename: 'DSQR_Promo_2.png',
-  },
-  {
-    src: 'https://dsqrstudio.b-cdn.net/Promotional%20Content/6%20(1).png?width=800&quality=70&format=webp',
-    alt: 'Promo material 3',
-    filename: 'DSQR_Promo_3.png',
-  },
-  {
-    src: 'https://dsqrstudio.b-cdn.net/Promotional%20Content/7.png?width=800&quality=70&format=webp',
-    alt: 'Promo material 4',
-    filename: 'DSQR_Promo_4.png',
-  },
-  {
-    src: 'https://dsqrstudio.b-cdn.net/Promotional%20Content/imp%20(2).png?width=800&quality=70&format=webp',
-    alt: 'Promo material 5',
-    filename: 'DSQR_Promo_5.png',
-  },
-  {
-    src: 'https://dsqrstudio.b-cdn.net/Promotional%20Content/imp%20(3).png?width=800&quality=70&format=webp',
-    alt: 'Promo material 6',
-    filename: 'DSQR_Promo_6.png',
-  },
-  {
-    src: 'https://dsqrstudio.b-cdn.net/Promotional%20Content/imp%20(4).png?width=800&quality=70&format=webp',
-    alt: 'Promo material 7',
-    filename: 'DSQR_Promo_7.png',
-  },
-  {
-    src: 'https://dsqrstudio.b-cdn.net/Promotional%20Content/imp.png?width=800&quality=70&format=webp',
-    alt: 'Promo material 8',
-    filename: 'DSQR_Promo_8.png',
-  },
-]
-
 export default function Affiliates() {
   const [boundWidth, setBoundWidth] = useState(300)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -142,8 +79,10 @@ export default function Affiliates() {
   useEffect(() => {
     // function to recalc on resize
     const handleResize = () => {
-      if (window.innerWidth < 640) setBoundWidth(350) // mobile
-      else if (window.innerWidth < 1024) setBoundWidth(350) // tablet
+      if (window.innerWidth < 640)
+        setBoundWidth(350) // mobile
+      else if (window.innerWidth < 1024)
+        setBoundWidth(350) // tablet
       else setBoundWidth(500) // desktop
     }
 
@@ -151,6 +90,46 @@ export default function Affiliates() {
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [])
+
+  const [promoImages, setPromoImages] = useState([])
+  // Fetch promo images from /api/admin/affiliates (existing)
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/affiliates`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data.items)) {
+          setPromoImages(data.items)
+        } else {
+          setPromoImages([])
+        }
+      })
+      .catch(() => setPromoImages([]))
+  }, [])
+
+  // Fetch affiliated category images and merge with promoImages
+  useEffect(() => {
+    const fetchAffiliatedImages = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/media-items/category/affiliated`)
+        const data = await res.json()
+        if (data && Array.isArray(data.data)) {
+          // Extract only required fields
+          const affiliatedImages = data.data.map(img => ({
+            id: img.id,
+            src: img.src,
+            alt: img.alt || '',
+            filename: img.filename || '',
+          }))
+          // Merge with promoImages (append)
+          setPromoImages(prev => [...prev, ...affiliatedImages])
+        }
+      } catch (err) {
+        // fail silently
+      }
+    }
+    fetchAffiliatedImages()
+  }, [])
+
   return (
     <main className="">
       {/* Section 1 - Hero */}
@@ -276,7 +255,8 @@ export default function Affiliates() {
                   Apply in seconds{' '}
                 </h3>
                 <p className="text-base text-gray-600 leading-relaxed">
-                  Submit your affiliate application and get unique referral link once qualified.
+                  Submit your affiliate application and get unique referral link
+                  once qualified.
                 </p>
               </div>
             </div>
@@ -392,14 +372,43 @@ export default function Affiliates() {
                 border-t-[6px] border-t-black"
               ></span>
             </motion.span>
-            <Image
-              src="https://dsqrstudio.b-cdn.net/Extra's/affileats.png"
-              alt="Creative workspace"
-              width={800}
-              height={400}
-              className="w-full h-auto rounded-2xl object-contain"
-              sizes="(max-width:640px) 90vw, (max-width:1024px) 70vw, 800px"
-            />
+            {/* Dynamic affiliate image */}
+            {(() => {
+              const [affiliateImg, setAffiliateImg] = useState(null);
+              const [imgError, setImgError] = useState(false);
+              useEffect(() => {
+                async function fetchAffiliateImg() {
+                  try {
+                    const res = await fetch(
+                      `${process.env.NEXT_PUBLIC_API_URL}/api/admin/media-items/category/extras?subsection=affiliate`,
+                      { credentials: 'include' }
+                    );
+                    const data = await res.json();
+                    if (data && Array.isArray(data.data) && data.data.length > 0) {
+                      setAffiliateImg(data.data[0].src);
+                    }
+                  } catch (err) {
+                    console.error('Failed to fetch affiliate image:', err);
+                  }
+                }
+                fetchAffiliateImg();
+              }, []);
+              return !imgError && affiliateImg ? (
+                <Image
+                  src={affiliateImg}
+                  alt="Creative workspace"
+                  width={800}
+                  height={400}
+                  className="w-full h-auto rounded-2xl object-contain"
+                  sizes="(max-width:640px) 90vw, (max-width:1024px) 70vw, 800px"
+                  onError={() => setImgError(true)}
+                />
+              ) : (
+                <div className="w-full aspect-[2/1] rounded-2xl grid place-items-center">
+                  <span className="text-neutral-500">Affiliate image placeholder</span>
+                </div>
+              );
+            })()}
           </div>
         </div>
       </section>

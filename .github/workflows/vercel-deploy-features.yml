@@ -1,0 +1,43 @@
+# name: Trigger Vercel Deploy Hook (feature)
+
+# on:
+#   push:
+#     branches:
+#       - feature
+
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Call Vercel Deploy Hook
+#         env:
+#           VERCEL_DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK_FEATURE }}
+#         run: |
+#           echo "Triggering Vercel deploy for feature branch..."
+#           curl -X POST "$VERCEL_DEPLOY_HOOK"
+
+
+name: Deploy to Vercel (feature)
+on:
+  push:
+    branches:
+      - feature
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: npm ci
+      - name: Build
+        run: npm run build
+      - name: Deploy to Vercel (preview)
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          # VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}        # optional
+          # VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}# optional
+          
+        run: |
+          npm i -g vercel
+          vercel --token $VERCEL_TOKEN --confirm --prod=false --scope team_NMamfTZ37PfbLZjkCERYcLQe

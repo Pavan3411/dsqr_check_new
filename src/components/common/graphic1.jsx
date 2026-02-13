@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Check } from 'lucide-react'
 import Link from 'next/link'
 import FreeTrialForm from '@/components/common/FreeTrialForm'
@@ -10,18 +10,24 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 
 export default function GraphicSection() {
- const images = [
-  "https://dsqrstudio.b-cdn.net/Graphics/graphic-header/9aed5621570c63dbe9a6255a386d146f82729055.png?width=800&quality=70&format=webp",
-  "https://dsqrstudio.b-cdn.net/Graphics/graphic-header/943eb6689c3acbb92c2323f31f8d7fc470658000.png?width=800&quality=70&format=webp",
-  "https://dsqrstudio.b-cdn.net/Graphics/graphic-header/165e621e3efc9521dccceebf7abb7957b0a291f2.png?width=800&quality=70&format=webp",
-  "https://dsqrstudio.b-cdn.net/Graphics/graphic-header/c9516044ba93b195bed30437a462460761dfe6a3.png?width=800&quality=70&format=webp",
-  "https://dsqrstudio.b-cdn.net/Graphics/graphic-header/2733ba736a8070ca0289d8b3692e8d240fa05d98.png?width=800&quality=70&format=webp",
-  "https://dsqrstudio.b-cdn.net/Graphics/graphic-header/eb1ff97fa09df547fab2f6db9e247168ce8e4296.png?width=800&quality=70&format=webp",
-  "https://dsqrstudio.b-cdn.net/Graphics/graphic-header/c73a133bfef8e852a189178b54e2d3417619da91.png?width=800&quality=70&format=webp",
-];
-
+  const [images, setImages] = useState([])
   const [open, setOpen] = useState(false)
   const router = useRouter()
+
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/media-items/category/graphics?subsection=primary-images`, {
+      credentials: 'include',
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.data)) {
+          setImages(data.data.map((img, i) => img.src || img.url || ''))
+        } else {
+          setImages([])
+        }
+      })
+      .catch(() => setImages([]))
+  }, [])
 
   const handlePlan = () => {
     // If already on a page that has BookCall component

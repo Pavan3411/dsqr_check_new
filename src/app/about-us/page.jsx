@@ -93,8 +93,49 @@ export default function About_Us() {
   const startShowingBannerRef = useRef(null)
   const stopShowingBannerRef = useRef(null)
   const [imgError, setImgError] = useState(false)
+  const [aboutUsImg, setAboutUsImg] = useState(null)
+  const [imageList, setImageList] = useState([])
+
+  useEffect(() => {
+    async function fetchAboutUsImg() {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/admin/media-items/category/extras?subsection=about_us`,
+          { credentials: 'include' },
+        )
+        const data = await res.json()
+        // Expecting data.data to be an array of media items
+        if (data && Array.isArray(data.data) && data.data.length > 0) {
+          // Use the first item's src property
+          setAboutUsImg(data.data[0].src)
+        }
+      } catch (err) {
+        console.error('Failed to fetch about_us image:', err)
+      }
+    }
+    fetchAboutUsImg()
+  }, [])
   const counterRef = useRef(null)
   const inView = useInView(counterRef, { once: true, margin: '-100px' })
+
+  // Dynamic imageList fetch
+  useEffect(() => {
+    const API_CATEGORY = 'team_photos'
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/media-items/category/${API_CATEGORY}`)
+      .then((res) => res.json())
+      .then((data) => {
+        console.log('Fetched team photos:', data)
+        // Use data.data as the array of media items
+        const images = Array.isArray(data.data)
+          ? data.data.map((item) => item.src)
+          : []
+        setImageList(images)
+      })
+      .catch(() => setImageList([]))
+  }, [])
+  useEffect(() => {
+    console.log('imageList:', imageList)
+  }, [imageList])
 
   // Example data (you can add as many as you like)
   const items = [
@@ -105,78 +146,118 @@ export default function About_Us() {
   ]
 
   // Duplicate the array so loop looks infinite
-const loopItems = [
-  {
-    id: 1,
-    before: 'https://vz-0822fa3c-02f.b-cdn.net/71116b1f-a151-4e5a-be49-64896496420c/playlist.m3u8',
-    beforePoster: 'https://vz-0822fa3c-02f.b-cdn.net/71116b1f-a151-4e5a-be49-64896496420c/thumbnail.jpg',
-    after: 'https://vz-0822fa3c-02f.b-cdn.net/b8e80cd5-629d-4879-9eec-a1f1b37f7a0d/playlist.m3u8',
-    afterPoster: 'https://vz-0822fa3c-02f.b-cdn.net/b8e80cd5-629d-4879-9eec-a1f1b37f7a0d/thumbnail.jpg',
-  },
-  {
-    id: 2,
-    before: 'https://vz-0822fa3c-02f.b-cdn.net/870edf38-a755-4af7-9a22-21ca2edf732e/playlist.m3u8',
-    beforePoster: 'https://vz-0822fa3c-02f.b-cdn.net/870edf38-a755-4af7-9a22-21ca2edf732e/thumbnail.jpg',
-    after: 'https://vz-0822fa3c-02f.b-cdn.net/3cc0224c-3031-49e8-b8f6-1c70c6f831f2/playlist.m3u8',
-    afterPoster: 'https://vz-0822fa3c-02f.b-cdn.net/3cc0224c-3031-49e8-b8f6-1c70c6f831f2/thumbnail.jpg',
-  },
-  {
-    id: 3,
-    before: 'https://vz-0822fa3c-02f.b-cdn.net/d40562ff-dd7e-4e41-af5e-3c038c5d5eb9/playlist.m3u8',
-    beforePoster: 'https://vz-0822fa3c-02f.b-cdn.net/d40562ff-dd7e-4e41-af5e-3c038c5d5eb9/thumbnail.jpg',
-    after: 'https://vz-0822fa3c-02f.b-cdn.net/68a5ea5d-5d34-42dd-ac17-32557c0225a6/playlist.m3u8',
-    afterPoster: 'https://vz-0822fa3c-02f.b-cdn.net/68a5ea5d-5d34-42dd-ac17-32557c0225a6/thumbnail.jpg',
-  },
-  {
-    id: 4,
-    before: 'https://vz-0822fa3c-02f.b-cdn.net/59a7ded6-de38-44b8-b753-410df6bac927/playlist.m3u8',
-    beforePoster: 'https://vz-0822fa3c-02f.b-cdn.net/59a7ded6-de38-44b8-b753-410df6bac927/thumbnail.jpg',
-    after: 'https://vz-0822fa3c-02f.b-cdn.net/ed068864-5043-4851-94a1-79f50096a619/playlist.m3u8',
-    afterPoster: 'https://vz-0822fa3c-02f.b-cdn.net/ed068864-5043-4851-94a1-79f50096a619/thumbnail.jpg',
-  },
-  {
-    id: 5,
-    before: 'https://vz-0822fa3c-02f.b-cdn.net/d0a14536-069c-4a47-b05b-6472188862b5/playlist.m3u8',
-    beforePoster: 'https://vz-0822fa3c-02f.b-cdn.net/d0a14536-069c-4a47-b05b-6472188862b5/thumbnail.jpg',
-    after: 'https://vz-0822fa3c-02f.b-cdn.net/c22de45a-4dc7-40e7-b88a-f2d6611c4351/playlist.m3u8',
-    afterPoster: 'https://vz-0822fa3c-02f.b-cdn.net/c22de45a-4dc7-40e7-b88a-f2d6611c4351/thumbnail.jpg',
-  },
-  {
-    id: 1,
-    before: 'https://vz-0822fa3c-02f.b-cdn.net/71116b1f-a151-4e5a-be49-64896496420c/playlist.m3u8',
-    beforePoster: 'https://vz-0822fa3c-02f.b-cdn.net/71116b1f-a151-4e5a-be49-64896496420c/thumbnail.jpg',
-    after: 'https://vz-0822fa3c-02f.b-cdn.net/b8e80cd5-629d-4879-9eec-a1f1b37f7a0d/playlist.m3u8',
-    afterPoster: 'https://vz-0822fa3c-02f.b-cdn.net/b8e80cd5-629d-4879-9eec-a1f1b37f7a0d/thumbnail.jpg',
-  },
-  {
-    id: 2,
-    before: 'https://vz-0822fa3c-02f.b-cdn.net/870edf38-a755-4af7-9a22-21ca2edf732e/playlist.m3u8',
-    beforePoster: 'https://vz-0822fa3c-02f.b-cdn.net/870edf38-a755-4af7-9a22-21ca2edf732e/thumbnail.jpg',
-    after: 'https://vz-0822fa3c-02f.b-cdn.net/3cc0224c-3031-49e8-b8f6-1c70c6f831f2/playlist.m3u8',
-    afterPoster: 'https://vz-0822fa3c-02f.b-cdn.net/3cc0224c-3031-49e8-b8f6-1c70c6f831f2/thumbnail.jpg',
-  },
-  {
-    id: 3,
-    before: 'https://vz-0822fa3c-02f.b-cdn.net/d40562ff-dd7e-4e41-af5e-3c038c5d5eb9/playlist.m3u8',
-    beforePoster: 'https://vz-0822fa3c-02f.b-cdn.net/d40562ff-dd7e-4e41-af5e-3c038c5d5eb9/thumbnail.jpg',
-    after: 'https://vz-0822fa3c-02f.b-cdn.net/68a5ea5d-5d34-42dd-ac17-32557c0225a6/playlist.m3u8',
-    afterPoster: 'https://vz-0822fa3c-02f.b-cdn.net/68a5ea5d-5d34-42dd-ac17-32557c0225a6/thumbnail.jpg',
-  },
-  {
-    id: 4,
-    before: 'https://vz-0822fa3c-02f.b-cdn.net/59a7ded6-de38-44b8-b753-410df6bac927/playlist.m3u8',
-    beforePoster: 'https://vz-0822fa3c-02f.b-cdn.net/59a7ded6-de38-44b8-b753-410df6bac927/thumbnail.jpg',
-    after: 'https://vz-0822fa3c-02f.b-cdn.net/ed068864-5043-4851-94a1-79f50096a619/playlist.m3u8',
-    afterPoster: 'https://vz-0822fa3c-02f.b-cdn.net/ed068864-5043-4851-94a1-79f50096a619/thumbnail.jpg',
-  },
-  {
-    id: 5,
-    before: 'https://vz-0822fa3c-02f.b-cdn.net/d0a14536-069c-4a47-b05b-6472188862b5/playlist.m3u8',
-    beforePoster: 'https://vz-0822fa3c-02f.b-cdn.net/d0a14536-069c-4a47-b05b-6472188862b5/thumbnail.jpg',
-    after: 'https://vz-0822fa3c-02f.b-cdn.net/c22de45a-4dc7-40e7-b88a-f2d6611c4351/playlist.m3u8',
-    afterPoster: 'https://vz-0822fa3c-02f.b-cdn.net/c22de45a-4dc7-40e7-b88a-f2d6611c4351/thumbnail.jpg',
-  }
-];
+  const loopItems = [
+    {
+      id: 1,
+      before:
+        'https://vz-0822fa3c-02f.b-cdn.net/71116b1f-a151-4e5a-be49-64896496420c/playlist.m3u8',
+      beforePoster:
+        'https://vz-0822fa3c-02f.b-cdn.net/71116b1f-a151-4e5a-be49-64896496420c/thumbnail.jpg',
+      after:
+        'https://vz-0822fa3c-02f.b-cdn.net/b8e80cd5-629d-4879-9eec-a1f1b37f7a0d/playlist.m3u8',
+      afterPoster:
+        'https://vz-0822fa3c-02f.b-cdn.net/b8e80cd5-629d-4879-9eec-a1f1b37f7a0d/thumbnail.jpg',
+    },
+    {
+      id: 2,
+      before:
+        'https://vz-0822fa3c-02f.b-cdn.net/870edf38-a755-4af7-9a22-21ca2edf732e/playlist.m3u8',
+      beforePoster:
+        'https://vz-0822fa3c-02f.b-cdn.net/870edf38-a755-4af7-9a22-21ca2edf732e/thumbnail.jpg',
+      after:
+        'https://vz-0822fa3c-02f.b-cdn.net/3cc0224c-3031-49e8-b8f6-1c70c6f831f2/playlist.m3u8',
+      afterPoster:
+        'https://vz-0822fa3c-02f.b-cdn.net/3cc0224c-3031-49e8-b8f6-1c70c6f831f2/thumbnail.jpg',
+    },
+    {
+      id: 3,
+      before:
+        'https://vz-0822fa3c-02f.b-cdn.net/d40562ff-dd7e-4e41-af5e-3c038c5d5eb9/playlist.m3u8',
+      beforePoster:
+        'https://vz-0822fa3c-02f.b-cdn.net/d40562ff-dd7e-4e41-af5e-3c038c5d5eb9/thumbnail.jpg',
+      after:
+        'https://vz-0822fa3c-02f.b-cdn.net/68a5ea5d-5d34-42dd-ac17-32557c0225a6/playlist.m3u8',
+      afterPoster:
+        'https://vz-0822fa3c-02f.b-cdn.net/68a5ea5d-5d34-42dd-ac17-32557c0225a6/thumbnail.jpg',
+    },
+    {
+      id: 4,
+      before:
+        'https://vz-0822fa3c-02f.b-cdn.net/59a7ded6-de38-44b8-b753-410df6bac927/playlist.m3u8',
+      beforePoster:
+        'https://vz-0822fa3c-02f.b-cdn.net/59a7ded6-de38-44b8-b753-410df6bac927/thumbnail.jpg',
+      after:
+        'https://vz-0822fa3c-02f.b-cdn.net/ed068864-5043-4851-94a1-79f50096a619/playlist.m3u8',
+      afterPoster:
+        'https://vz-0822fa3c-02f.b-cdn.net/ed068864-5043-4851-94a1-79f50096a619/thumbnail.jpg',
+    },
+    {
+      id: 5,
+      before:
+        'https://vz-0822fa3c-02f.b-cdn.net/d0a14536-069c-4a47-b05b-6472188862b5/playlist.m3u8',
+      beforePoster:
+        'https://vz-0822fa3c-02f.b-cdn.net/d0a14536-069c-4a47-b05b-6472188862b5/thumbnail.jpg',
+      after:
+        'https://vz-0822fa3c-02f.b-cdn.net/c22de45a-4dc7-40e7-b88a-f2d6611c4351/playlist.m3u8',
+      afterPoster:
+        'https://vz-0822fa3c-02f.b-cdn.net/c22de45a-4dc7-40e7-b88a-f2d6611c4351/thumbnail.jpg',
+    },
+    {
+      id: 1,
+      before:
+        'https://vz-0822fa3c-02f.b-cdn.net/71116b1f-a151-4e5a-be49-64896496420c/playlist.m3u8',
+      beforePoster:
+        'https://vz-0822fa3c-02f.b-cdn.net/71116b1f-a151-4e5a-be49-64896496420c/thumbnail.jpg',
+      after:
+        'https://vz-0822fa3c-02f.b-cdn.net/b8e80cd5-629d-4879-9eec-a1f1b37f7a0d/playlist.m3u8',
+      afterPoster:
+        'https://vz-0822fa3c-02f.b-cdn.net/b8e80cd5-629d-4879-9eec-a1f1b37f7a0d/thumbnail.jpg',
+    },
+    {
+      id: 2,
+      before:
+        'https://vz-0822fa3c-02f.b-cdn.net/870edf38-a755-4af7-9a22-21ca2edf732e/playlist.m3u8',
+      beforePoster:
+        'https://vz-0822fa3c-02f.b-cdn.net/870edf38-a755-4af7-9a22-21ca2edf732e/thumbnail.jpg',
+      after:
+        'https://vz-0822fa3c-02f.b-cdn.net/3cc0224c-3031-49e8-b8f6-1c70c6f831f2/playlist.m3u8',
+      afterPoster:
+        'https://vz-0822fa3c-02f.b-cdn.net/3cc0224c-3031-49e8-b8f6-1c70c6f831f2/thumbnail.jpg',
+    },
+    {
+      id: 3,
+      before:
+        'https://vz-0822fa3c-02f.b-cdn.net/d40562ff-dd7e-4e41-af5e-3c038c5d5eb9/playlist.m3u8',
+      beforePoster:
+        'https://vz-0822fa3c-02f.b-cdn.net/d40562ff-dd7e-4e41-af5e-3c038c5d5eb9/thumbnail.jpg',
+      after:
+        'https://vz-0822fa3c-02f.b-cdn.net/68a5ea5d-5d34-42dd-ac17-32557c0225a6/playlist.m3u8',
+      afterPoster:
+        'https://vz-0822fa3c-02f.b-cdn.net/68a5ea5d-5d34-42dd-ac17-32557c0225a6/thumbnail.jpg',
+    },
+    {
+      id: 4,
+      before:
+        'https://vz-0822fa3c-02f.b-cdn.net/59a7ded6-de38-44b8-b753-410df6bac927/playlist.m3u8',
+      beforePoster:
+        'https://vz-0822fa3c-02f.b-cdn.net/59a7ded6-de38-44b8-b753-410df6bac927/thumbnail.jpg',
+      after:
+        'https://vz-0822fa3c-02f.b-cdn.net/ed068864-5043-4851-94a1-79f50096a619/playlist.m3u8',
+      afterPoster:
+        'https://vz-0822fa3c-02f.b-cdn.net/ed068864-5043-4851-94a1-79f50096a619/thumbnail.jpg',
+    },
+    {
+      id: 5,
+      before:
+        'https://vz-0822fa3c-02f.b-cdn.net/d0a14536-069c-4a47-b05b-6472188862b5/playlist.m3u8',
+      beforePoster:
+        'https://vz-0822fa3c-02f.b-cdn.net/d0a14536-069c-4a47-b05b-6472188862b5/thumbnail.jpg',
+      after:
+        'https://vz-0822fa3c-02f.b-cdn.net/c22de45a-4dc7-40e7-b88a-f2d6611c4351/playlist.m3u8',
+      afterPoster:
+        'https://vz-0822fa3c-02f.b-cdn.net/c22de45a-4dc7-40e7-b88a-f2d6611c4351/thumbnail.jpg',
+    },
+  ]
 
   const { backgroundColor, textColor } = useAnimatedBackground({
     startRef: blackSectionStartRef,
@@ -418,22 +499,13 @@ const loopItems = [
 
               {/* Right image */}
               <div className="relative justify-self-end">
-                {!imgError ? (
-                  <Image
-                    src="https://dsqrstudio.b-cdn.net/Extra's/TV%20Web%20Final-PS%20Good%20Size.png?w=1600&format=webp&quality=75"
-                    alt="Creative team"
-                    width={800}
-                    height={650}
-                    className="rounded-2xl w-80% h-80% object-cover"
-                    onError={() => setImgError(true)}
-                  />
-                ) : (
-                  <div className="w-full aspect-[4/3] rounded-2xl grid place-items-center">
-                    <span className="text-neutral-500">
-                      Team photo placeholder
-                    </span>
-                  </div>
-                )}
+                <Image
+                  src="https://dsqrstudio.b-cdn.net/Extra's/TV%20Web%20Final-PS%20Good%20Size.png?w=800&format=webp&quality=75"
+                  alt="Creative workspace"
+                  width={800}
+                  height={650}
+                  className="rounded-2xl w-80% h-80% object-cover"
+                />
               </div>
             </div>
           </div>
@@ -527,11 +599,12 @@ const loopItems = [
             {/* Image block */}
             <div className="relative mt-5 rounded-2xl">
               <Image
-                src="https://dsqrstudio.b-cdn.net/Extra's/About%20us%20graphic.jpg?w=800&format=webp&quality=75"
+                src={aboutUsImg}
                 alt="Creative workspace"
                 width={1200}
                 height={800}
                 className="h-auto w-full object-cover rounded-2xl"
+                onError={() => setImgError(true)}
               />
             </div>
           </div>
@@ -574,31 +647,7 @@ const loopItems = [
               ]
               const filled = filledArray.includes(i)
 
-              const imageList = [
-                'https://dsqrstudio.b-cdn.net/Team_photo/19.webp',
-                'https://dsqrstudio.b-cdn.net/Team_photo/3%20(2).webp',
-                'https://dsqrstudio.b-cdn.net/Team_photo/4%20(1).webp',
-                'https://dsqrstudio.b-cdn.net/Team_photo/20.webp',
-                'https://dsqrstudio.b-cdn.net/Team_photo/28.webp',
-                'https://dsqrstudio.b-cdn.net/Team_photo/6%20(4).webp',
-                'https://dsqrstudio.b-cdn.net/Team_photo/7%20(1).webp',
-                'https://dsqrstudio.b-cdn.net/Team_photo/8%20(5).webp',
-                'https://dsqrstudio.b-cdn.net/Team_photo/9.webp',
-                'https://dsqrstudio.b-cdn.net/Team_photo/10.webp',
-                'https://dsqrstudio.b-cdn.net/Team_photo/12.webp',
-                'https://dsqrstudio.b-cdn.net/Team_photo/13.webp',
-                'https://dsqrstudio.b-cdn.net/Team_photo/14.webp',
-                'https://dsqrstudio.b-cdn.net/Team_photo/15.webp',
-                'https://dsqrstudio.b-cdn.net/Team_photo/18.webp',
-                'https://dsqrstudio.b-cdn.net/Team_photo/11.webp',
-                'https://dsqrstudio.b-cdn.net/Team_photo/5%20(1).webp',
-                'https://dsqrstudio.b-cdn.net/Team_photo/21.webp',
-                'https://dsqrstudio.b-cdn.net/Team_photo/22.webp',
-                'https://dsqrstudio.b-cdn.net/Team_photo/23.webp',
-                'https://dsqrstudio.b-cdn.net/Team_photo/24.webp',
-                'https://dsqrstudio.b-cdn.net/Team_photo/25.webp',
-                'https://dsqrstudio.b-cdn.net/Team_photo/26.webp',
-              ]
+              // const imageList = [
 
               const imgSrc =
                 filled && filledArray.indexOf(i) < imageList.length

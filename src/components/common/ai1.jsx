@@ -8,53 +8,85 @@ import FreeTrialForm from '@/components/common/FreeTrialForm'
 import { Button } from '@/components/ui/button'
 import Marquee from 'react-fast-marquee'
 import { useRouter } from 'next/navigation'
+import { useEffect, useRef } from 'react'
+
+// export default function AI1() {
+//   const [open, setOpen] = useState(false)
+//   const [paused, setPaused] = useState(false)
+//   const router = useRouter()
+// const marqueeImages = [
+//   {
+//     src: "https://dsqrstudio.b-cdn.net/Ai-lab/krix.ai_10904_a_fashion_beautifull_girl_model_wearing_silver__94be5493-65a1-44c3-8cf5-d413e15f937a_1.png?width=800&quality=70&format=webp",
+//     alt: "Fashion model wearing silver",
+//   },
+//   {
+//     src: "https://dsqrstudio.b-cdn.net/Ai-lab/krix.ai_10904_a_white_balaclava_ski_mask_adorned_with_colorful__7771e62a-4a55-498d-9a20-2ca45c0e20f1.png?width=800&quality=70&format=webp",
+//     alt: "White balaclava ski mask with colors",
+//   },
+//   {
+//     src: "https://dsqrstudio.b-cdn.net/Ai-lab/krix.ai_10904_httpss.mj.runbafG49D2LWM_A_joyful_8-year-old_Kore_41e05f27-278f-4c95-9dd7-121f7b20ca47.png?width=800&quality=70&format=webp",
+//     alt: "Joyful Korean child",
+//   },
+//   {
+//     src: "https://dsqrstudio.b-cdn.net/Ai-lab/krix.ai_10904_httpss.mj.runBtNPhh_xojQ_A_humorous_and_hyper-det_c57c3605-7e6f-4727-9a00-67f97b3cb65b.png?width=800&quality=70&format=webp",
+//     alt: "Humorous hyper-detailed art",
+//   },
+//   {
+//     src: "https://dsqrstudio.b-cdn.net/Ai-lab/krix.ai_10904_httpss.mj.runKcgTybghK44_A_whimsical_illustration_965c2929-f739-4584-bfc2-fb98a50a1a61.png?width=800&quality=70&format=webp",
+//     alt: "Whimsical illustration",
+//   },
+//   {
+//     src: "https://dsqrstudio.b-cdn.net/Ai-lab/krix.ai_10904_httpss.mj.runpgBvQUzu8mA_women_brown_model_as_a_f_e32ef085-f308-4c9e-ad5b-ebb9a432a151.png?width=800&quality=70&format=webp",
+//     alt: "Brown model fashion",
+//   },
+//   {
+//     src: "https://dsqrstudio.b-cdn.net/Ai-lab/krix.ai_10904_httpss.mj.runrvGw6wySRrc_fantasy_realistic_art_A__55b6db8a-108c-4632-b274-ae948d4ac418.png?width=800&quality=70&format=webp",
+//     alt: "Fantasy realistic art",
+//   },
+//   {
+//     src: "https://dsqrstudio.b-cdn.net/Ai-lab/krix.ai_10904_lookbook_fashion_photography_of_a_woman_in_a_chic_31b13e94-9135-43da-b787-570ae7917743.png?width=800&quality=70&format=webp",
+//     alt: "Fashion lookbook",
+//   },
+//   {
+//     src: "https://dsqrstudio.b-cdn.net/Ai-lab/krix.ai_10904_tatting_lace_on_a_nordic_model_writting_in_a_book_bf62191a-5ef3-49b3-9910-86868af97049.png?width=800&quality=70&format=webp",
+//     alt: "Nordic model writing in a book",
+//   },
+//   {
+//     src: "https://dsqrstudio.b-cdn.net/Ai-lab/krix.ai_10904_two_red-haired_women_standing_in_a_pink_and_purpl_13212f0c-cdf3-4565-8747-65b91e132e0a.png?width=800&quality=70&format=webp",
+//     alt: "Two red-haired women in colorful scene",
+//   },
+// ];
+
+
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 export default function AI1() {
   const [open, setOpen] = useState(false)
   const [paused, setPaused] = useState(false)
   const router = useRouter()
-const marqueeImages = [
-  {
-    src: "https://dsqrstudio.b-cdn.net/Ai-lab/krix.ai_10904_a_fashion_beautifull_girl_model_wearing_silver__94be5493-65a1-44c3-8cf5-d413e15f937a_1.png?width=800&quality=70&format=webp",
-    alt: "Fashion model wearing silver",
-  },
-  {
-    src: "https://dsqrstudio.b-cdn.net/Ai-lab/krix.ai_10904_a_white_balaclava_ski_mask_adorned_with_colorful__7771e62a-4a55-498d-9a20-2ca45c0e20f1.png?width=800&quality=70&format=webp",
-    alt: "White balaclava ski mask with colors",
-  },
-  {
-    src: "https://dsqrstudio.b-cdn.net/Ai-lab/krix.ai_10904_httpss.mj.runbafG49D2LWM_A_joyful_8-year-old_Kore_41e05f27-278f-4c95-9dd7-121f7b20ca47.png?width=800&quality=70&format=webp",
-    alt: "Joyful Korean child",
-  },
-  {
-    src: "https://dsqrstudio.b-cdn.net/Ai-lab/krix.ai_10904_httpss.mj.runBtNPhh_xojQ_A_humorous_and_hyper-det_c57c3605-7e6f-4727-9a00-67f97b3cb65b.png?width=800&quality=70&format=webp",
-    alt: "Humorous hyper-detailed art",
-  },
-  {
-    src: "https://dsqrstudio.b-cdn.net/Ai-lab/krix.ai_10904_httpss.mj.runKcgTybghK44_A_whimsical_illustration_965c2929-f739-4584-bfc2-fb98a50a1a61.png?width=800&quality=70&format=webp",
-    alt: "Whimsical illustration",
-  },
-  {
-    src: "https://dsqrstudio.b-cdn.net/Ai-lab/krix.ai_10904_httpss.mj.runpgBvQUzu8mA_women_brown_model_as_a_f_e32ef085-f308-4c9e-ad5b-ebb9a432a151.png?width=800&quality=70&format=webp",
-    alt: "Brown model fashion",
-  },
-  {
-    src: "https://dsqrstudio.b-cdn.net/Ai-lab/krix.ai_10904_httpss.mj.runrvGw6wySRrc_fantasy_realistic_art_A__55b6db8a-108c-4632-b274-ae948d4ac418.png?width=800&quality=70&format=webp",
-    alt: "Fantasy realistic art",
-  },
-  {
-    src: "https://dsqrstudio.b-cdn.net/Ai-lab/krix.ai_10904_lookbook_fashion_photography_of_a_woman_in_a_chic_31b13e94-9135-43da-b787-570ae7917743.png?width=800&quality=70&format=webp",
-    alt: "Fashion lookbook",
-  },
-  {
-    src: "https://dsqrstudio.b-cdn.net/Ai-lab/krix.ai_10904_tatting_lace_on_a_nordic_model_writting_in_a_book_bf62191a-5ef3-49b3-9910-86868af97049.png?width=800&quality=70&format=webp",
-    alt: "Nordic model writing in a book",
-  },
-  {
-    src: "https://dsqrstudio.b-cdn.net/Ai-lab/krix.ai_10904_two_red-haired_women_standing_in_a_pink_and_purpl_13212f0c-cdf3-4565-8747-65b91e132e0a.png?width=800&quality=70&format=webp",
-    alt: "Two red-haired women in colorful scene",
-  },
-];
+  const [marqueeImages, setMarqueeImages] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    console.log('Fetching marquee images from API...')
+    fetch(
+      `${API_BASE_URL}/api/admin/media-items/category/ai_lab?subsection=primary_graphics`,
+      { credentials: 'include' }
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        console.log('API response:', data)
+        if (data.success && Array.isArray(data.data)) {
+          setMarqueeImages(data.data)
+          console.log('Fetched marquee images:', data.data)
+        } else {
+          setMarqueeImages([])
+        }
+      })
+      .catch(() => setMarqueeImages([]))
+      .finally(() => setLoading(false))
+  }, [])
 
 
   const handlePlan = () => {
@@ -199,11 +231,10 @@ const marqueeImages = [
             {' '}
             {/* no extra gap */}
             {marqueeImages.map((img, idx) => (
-              <div key={`${img.src}-${idx}`}     className={`flex-shrink-0 ${idx === marqueeImages.length - 1 ? 'mr-5' : ''}`}>
+              <div key={`${img.src || img._id || idx}`} className={`flex-shrink-0 ${idx === marqueeImages.length - 1 ? 'mr-5' : ''}`}>
                 <img
                   src={img.src}
-                  alt={img.alt}
-                  // make heights consistent and let width adapt; object-cover removes letterboxing
+                  alt={img.alt || 'AI Graphic'}
                   className="h-48 sm:h-60 md:h-96 w-auto object-cover rounded-2xl transition-shadow duration-300"
                   loading="lazy"
                 />

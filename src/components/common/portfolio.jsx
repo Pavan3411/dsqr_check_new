@@ -9,6 +9,34 @@ export default function Portfolio() {
   const [ref, inView] = useInView({ threshold: 0.3 })
   const [isPlaying, setIsPlaying] = useState(false)
 
+  // Dynamic video state
+  const [portfolioVideo, setPortfolioVideo] = useState(null)
+  const libraryId = '588182' // Your Bunny.net library ID
+
+  function getBunnyIframeUrl(hlsUrl, libraryId) {
+    // Correct extraction: get the last path segment before /playlist.m3u8
+    if (!hlsUrl) return null
+    const match = hlsUrl.match(/\/([a-f0-9-]+)\/playlist\.m3u8/)
+    if (!match) return null
+    const videoId = match[1]
+    const url = `https://iframe.mediadelivery.net/embed/${libraryId}/${videoId}?autoplay=true&muted=true&loop=true&playsinline=true&preload=true`
+    console.log('Generated Bunny.net iframe URL:', url)
+    return url
+  }
+
+  useEffect(() => {
+    fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/admin/media-items/category/home_portfolio_video?subsection=home-portfolio`,
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && Array.isArray(data.data) && data.data.length > 0) {
+          setPortfolioVideo(data.data[0])
+        }
+      })
+      .catch((err) => console.error('Portfolio video fetch error:', err))
+  }, [])
+
   useEffect(() => {
     if (inView) controls.start('visible')
   }, [inView, controls])
@@ -109,15 +137,21 @@ export default function Portfolio() {
           transition={{ duration: 0.8, ease: 'easeOut' }}
           viewport={{ once: true }}
         >
-          <iframe
-            // ref={iframeRef}
-            src="https://iframe.mediadelivery.net/embed/497756/9887b1a4-34ac-4c06-9e6a-27dcc25ed83c?autoplay=true&muted=true&loop=true&playsinline=true&preload=true"
-            loading="lazy"
-            allow="autoplay; fullscreen; encrypted-media"
-            allowFullScreen
-            className="w-full h-full border-0"
-            title="DSQR Studio autoplay"
-          />
+          {portfolioVideo &&
+          getBunnyIframeUrl(portfolioVideo.src, libraryId) ? (
+            <iframe
+              src={getBunnyIframeUrl(portfolioVideo.src, libraryId)}
+              loading="lazy"
+              allow="autoplay; fullscreen; encrypted-media"
+              allowFullScreen
+              className="w-full h-full border-0"
+              title={portfolioVideo.title || 'DSQR Studio autoplay'}
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-100">
+              Loading portfolio video...
+            </div>
+          )}
         </motion.div>
       </div>
     </section>
