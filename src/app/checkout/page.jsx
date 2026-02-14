@@ -2139,3 +2139,11 @@
 //     </>
 //   )
 // }
+export default function CheckoutPlaceholder() {
+  return (
+    <div style={{ padding: 40, textAlign: 'center' }}>
+      <h1>Checkout is temporarily disabled</h1>
+      <p>Please contact support for assistance.</p>
+    </div>
+  );
+}
