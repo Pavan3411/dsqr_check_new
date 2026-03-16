@@ -11,22 +11,42 @@ import { useRouter } from 'next/navigation'
 
 export default function GraphicSection() {
   const [images, setImages] = useState([])
+  const [loaded, setLoaded] = useState([])
   const [open, setOpen] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/media-items/category/graphics?subsection=primary-images`, {
-      credentials: 'include',
-    })
+    fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/admin/media-items/category/graphics?subsection=primary-images`,
+      {
+        credentials: 'include',
+      },
+    )
       .then((res) => res.json())
       .then((data) => {
         if (data.success && Array.isArray(data.data)) {
-          setImages(data.data.map((img, i) => img.src || img.url || ''))
+          const imgs = data.data.map((img, i) => {
+            const baseUrl = img.src || img.url || ''
+            if (!baseUrl) return ''
+            // Avoid double appending if already present
+            const params = '?width=800&quality=70&format=webp'
+            return baseUrl.includes(params)
+              ? baseUrl
+              : baseUrl +
+                  (baseUrl.includes('?') ? '&' : '?') +
+                  'width=800&quality=70&format=webp'
+          })
+          setImages(imgs)
+          setLoaded(Array(imgs.length).fill(false))
         } else {
           setImages([])
+          setLoaded([])
         }
       })
-      .catch(() => setImages([]))
+      .catch(() => {
+        setImages([])
+        setLoaded([])
+      })
   }, [])
 
   const handlePlan = () => {
@@ -97,7 +117,8 @@ export default function GraphicSection() {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3, duration: 0.6 }}
             >
-             Supercharge your brand visuals without limits. No contracts, no delays, just pure design power.
+              Supercharge your brand visuals without limits. No contracts, no
+              delays, just pure design power.
             </motion.p>
 
             {/* CTA Buttons */}
@@ -163,82 +184,202 @@ export default function GraphicSection() {
         "
           >
             {/* Row 1 order: 1, 2, 4, 3 */}
-            <div className="relative rounded-2xl overflow-hidden col-span-1">
-              <Image
-                src={images[0]}
-                alt="g1"
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 33vw"
-                unoptimized
-              />
+
+            <div className="relative rounded-2xl overflow-hidden col-span-1 bg-white">
+              {!loaded[0] && <div className="absolute inset-0 bg-white" />}
+              {images[0] && (
+                <Image
+                  src={images[0]}
+                  alt="g1"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                  // unoptimized removed to enable Next.js image optimization
+                  onLoad={() =>
+                    setLoaded((prev) => {
+                      const arr = [...prev]
+                      arr[0] = true
+                      return arr
+                    })
+                  }
+                  onError={() =>
+                    setLoaded((prev) => {
+                      const arr = [...prev]
+                      arr[0] = true
+                      return arr
+                    })
+                  }
+                />
+              )}
             </div>
 
-            <div className="relative rounded-2xl overflow-hidden col-span-2">
-              <Image
-                src={images[1]}
-                alt="g2"
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 66vw"
-                unoptimized
-              />
+            <div className="relative rounded-2xl overflow-hidden col-span-2 bg-white">
+              {!loaded[1] && <div className="absolute inset-0 bg-white" />}
+              {images[1] && (
+                <Image
+                  src={images[1]}
+                  alt="g2"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 66vw"
+                  // unoptimized removed to enable Next.js image optimization
+                  onLoad={() =>
+                    setLoaded((prev) => {
+                      const arr = [...prev]
+                      arr[1] = true
+                      return arr
+                    })
+                  }
+                  onError={() =>
+                    setLoaded((prev) => {
+                      const arr = [...prev]
+                      arr[1] = true
+                      return arr
+                    })
+                  }
+                />
+              )}
             </div>
 
-            <div className="relative rounded-2xl overflow-hidden col-span-1">
-              <Image
-                src={images[2]}
-                alt="g4"
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 33vw"
-                unoptimized
-              />
+            <div className="relative rounded-2xl overflow-hidden col-span-1 bg-white">
+              {!loaded[2] && <div className="absolute inset-0 bg-white" />}
+              {images[2] && (
+                <Image
+                  src={images[2]}
+                  alt="g4"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                  // unoptimized removed to enable Next.js image optimization
+                  onLoad={() =>
+                    setLoaded((prev) => {
+                      const arr = [...prev]
+                      arr[2] = true
+                      return arr
+                    })
+                  }
+                  onError={() =>
+                    setLoaded((prev) => {
+                      const arr = [...prev]
+                      arr[2] = true
+                      return arr
+                    })
+                  }
+                />
+              )}
             </div>
 
-            <div className="relative rounded-2xl overflow-hidden col-span-1">
-              <Image
-                src={images[3]}
-                alt="g3"
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 33vw"
-                unoptimized
-              />
+            <div className="relative rounded-2xl overflow-hidden col-span-1 bg-white">
+              {!loaded[3] && <div className="absolute inset-0 bg-white" />}
+              {images[3] && (
+                <Image
+                  src={images[3]}
+                  alt="g3"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                  // unoptimized removed to enable Next.js image optimization
+                  onLoad={() =>
+                    setLoaded((prev) => {
+                      const arr = [...prev]
+                      arr[3] = true
+                      return arr
+                    })
+                  }
+                  onError={() =>
+                    setLoaded((prev) => {
+                      const arr = [...prev]
+                      arr[3] = true
+                      return arr
+                    })
+                  }
+                />
+              )}
             </div>
 
             {/* Row 2 order: 5, 6, 7 */}
-            <div className="relative rounded-2xl overflow-hidden col-span-1 lg:col-span-2">
-              <Image
-                src={images[4]}
-                alt="g5"
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 50vw"
-                unoptimized
-              />
+            <div className="relative rounded-2xl overflow-hidden col-span-1 lg:col-span-2 bg-white">
+              {!loaded[4] && <div className="absolute inset-0 bg-white" />}
+              {images[4] && (
+                <Image
+                  src={images[4]}
+                  alt="g5"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  // unoptimized removed to enable Next.js image optimization
+                  onLoad={() =>
+                    setLoaded((prev) => {
+                      const arr = [...prev]
+                      arr[4] = true
+                      return arr
+                    })
+                  }
+                  onError={() =>
+                    setLoaded((prev) => {
+                      const arr = [...prev]
+                      arr[4] = true
+                      return arr
+                    })
+                  }
+                />
+              )}
             </div>
 
-            <div className="relative rounded-2xl overflow-hidden col-span-1">
-              <Image
-                src={images[5]}
-                alt="g6"
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 33vw"
-                unoptimized
-              />
+            <div className="relative rounded-2xl overflow-hidden col-span-1 bg-white">
+              {!loaded[5] && <div className="absolute inset-0 bg-white" />}
+              {images[5] && (
+                <Image
+                  src={images[5]}
+                  alt="g6"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                  // unoptimized removed to enable Next.js image optimization
+                  onLoad={() =>
+                    setLoaded((prev) => {
+                      const arr = [...prev]
+                      arr[5] = true
+                      return arr
+                    })
+                  }
+                  onError={() =>
+                    setLoaded((prev) => {
+                      const arr = [...prev]
+                      arr[5] = true
+                      return arr
+                    })
+                  }
+                />
+              )}
             </div>
 
-            <div className="relative rounded-2xl overflow-hidden col-span-2">
-              <Image
-                src={images[6]}
-                alt="g7"
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 66vw"
-                unoptimized
-              />
+            <div className="relative rounded-2xl overflow-hidden col-span-2 bg-white">
+              {!loaded[6] && <div className="absolute inset-0 bg-white" />}
+              {images[6] && (
+                <Image
+                  src={images[6]}
+                  alt="g7"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 66vw"
+                  // unoptimized removed to enable Next.js image optimization
+                  onLoad={() =>
+                    setLoaded((prev) => {
+                      const arr = [...prev]
+                      arr[6] = true
+                      return arr
+                    })
+                  }
+                  onError={() =>
+                    setLoaded((prev) => {
+                      const arr = [...prev]
+                      arr[6] = true
+                      return arr
+                    })
+                  }
+                />
+              )}
             </div>
           </div>
         </motion.div>
@@ -250,7 +391,8 @@ export default function GraphicSection() {
             transition={{ delay: 0.3, duration: 0.6 }}
           >
             {' '}
-           Supercharge your brand visuals without limits. No contracts, no delays, just pure design power.
+            Supercharge your brand visuals without limits. No contracts, no
+            delays, just pure design power.
           </motion.p>
 
           <motion.div

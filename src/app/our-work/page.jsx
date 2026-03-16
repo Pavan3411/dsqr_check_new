@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import CalendarSection from '@/components/common/calendar'
 import FAQ from '@/components/common/FAQ'
 import TrustedBySection from '@/components/common/Logo'
@@ -51,79 +51,55 @@ export default function OurWork() {
       router.push('/video?scroll=see-plan')
     }
   }
-  // Duplicate the array so loop looks infinite
-const loopItems = [
-  {
-    id: 1,
-    before: 'https://vz-0822fa3c-02f.b-cdn.net/71116b1f-a151-4e5a-be49-64896496420c/playlist.m3u8',
-    beforePoster: 'https://vz-0822fa3c-02f.b-cdn.net/71116b1f-a151-4e5a-be49-64896496420c/thumbnail.jpg',
-    after: 'https://vz-0822fa3c-02f.b-cdn.net/b8e80cd5-629d-4879-9eec-a1f1b37f7a0d/playlist.m3u8',
-    afterPoster: 'https://vz-0822fa3c-02f.b-cdn.net/b8e80cd5-629d-4879-9eec-a1f1b37f7a0d/thumbnail.jpg',
-  },
-  {
-    id: 6,
-    before: 'https://vz-0822fa3c-02f.b-cdn.net/626d2fd5-93b3-4ad3-968e-8d5800257c90/playlist.m3u8',
-    beforePoster: 'https://vz-0822fa3c-02f.b-cdn.net/626d2fd5-93b3-4ad3-968e-8d5800257c90/thumbnail.jpg',
-    after: 'https://vz-0822fa3c-02f.b-cdn.net/c609cb37-9249-4e6a-a64e-775f41766c99/playlist.m3u8',
-    afterPoster: 'https://vz-0822fa3c-02f.b-cdn.net/c609cb37-9249-4e6a-a64e-775f41766c99/thumbnail.jpg',
-  },
-  {
-    id: 7,
-    before: 'https://vz-0822fa3c-02f.b-cdn.net/c18e1340-c6b5-41c8-ada7-7f6ed251f656/playlist.m3u8',
-    beforePoster: 'https://vz-0822fa3c-02f.b-cdn.net/c18e1340-c6b5-41c8-ada7-7f6ed251f656/thumbnail.jpg',
-    after: 'https://vz-0822fa3c-02f.b-cdn.net/92ce9dca-6af1-41e6-95ac-33a4add71270/playlist.m3u8',
-    afterPoster: 'https://vz-0822fa3c-02f.b-cdn.net/92ce9dca-6af1-41e6-95ac-33a4add71270/thumbnail.jpg',
-  },
-  {
-    id: 8,
-    before: 'https://vz-0822fa3c-02f.b-cdn.net/cc30864e-8172-44e5-a07d-606fcf08b480/playlist.m3u8',
-    beforePoster: 'https://vz-0822fa3c-02f.b-cdn.net/cc30864e-8172-44e5-a07d-606fcf08b480/thumbnail.jpg',
-    after: 'https://vz-0822fa3c-02f.b-cdn.net/4406abe0-3a3b-4327-bf0c-21e4cf829ec9/playlist.m3u8',
-    afterPoster: 'https://vz-0822fa3c-02f.b-cdn.net/4406abe0-3a3b-4327-bf0c-21e4cf829ec9/thumbnail.jpg',
-  },
-  {
-    id: 9,
-    before: 'https://vz-0822fa3c-02f.b-cdn.net/f8588ef0-02d5-493f-8fae-998e32dac99d/playlist.m3u8',
-    beforePoster: 'https://vz-0822fa3c-02f.b-cdn.net/f8588ef0-02d5-493f-8fae-998e32dac99d/thumbnail.jpg',
-    after: 'https://vz-0822fa3c-02f.b-cdn.net/a275e654-eca1-4d57-a745-415f82c971db/playlist.m3u8',
-    afterPoster: 'https://vz-0822fa3c-02f.b-cdn.net/a275e654-eca1-4d57-a745-415f82c971db/thumbnail.jpg',
-  },
-  {
-    id: 1,
-    before: 'https://vz-0822fa3c-02f.b-cdn.net/71116b1f-a151-4e5a-be49-64896496420c/playlist.m3u8',
-    beforePoster: 'https://vz-0822fa3c-02f.b-cdn.net/71116b1f-a151-4e5a-be49-64896496420c/thumbnail.jpg',
-    after: 'https://vz-0822fa3c-02f.b-cdn.net/b8e80cd5-629d-4879-9eec-a1f1b37f7a0d/playlist.m3u8',
-    afterPoster: 'https://vz-0822fa3c-02f.b-cdn.net/b8e80cd5-629d-4879-9eec-a1f1b37f7a0d/thumbnail.jpg',
-  },
-  {
-    id: 6,
-    before: 'https://vz-0822fa3c-02f.b-cdn.net/626d2fd5-93b3-4ad3-968e-8d5800257c90/playlist.m3u8',
-    beforePoster: 'https://vz-0822fa3c-02f.b-cdn.net/626d2fd5-93b3-4ad3-968e-8d5800257c90/thumbnail.jpg',
-    after: 'https://vz-0822fa3c-02f.b-cdn.net/c609cb37-9249-4e6a-a64e-775f41766c99/playlist.m3u8',
-    afterPoster: 'https://vz-0822fa3c-02f.b-cdn.net/c609cb37-9249-4e6a-a64e-775f41766c99/thumbnail.jpg',
-  },
-  {
-    id: 7,
-    before: 'https://vz-0822fa3c-02f.b-cdn.net/c18e1340-c6b5-41c8-ada7-7f6ed251f656/playlist.m3u8',
-    beforePoster: 'https://vz-0822fa3c-02f.b-cdn.net/c18e1340-c6b5-41c8-ada7-7f6ed251f656/thumbnail.jpg',
-    after: 'https://vz-0822fa3c-02f.b-cdn.net/92ce9dca-6af1-41e6-95ac-33a4add71270/playlist.m3u8',
-    afterPoster: 'https://vz-0822fa3c-02f.b-cdn.net/92ce9dca-6af1-41e6-95ac-33a4add71270/thumbnail.jpg',
-  },
-   {
-    id: 8,
-    before: 'https://vz-0822fa3c-02f.b-cdn.net/cc30864e-8172-44e5-a07d-606fcf08b480/playlist.m3u8',
-    beforePoster: 'https://vz-0822fa3c-02f.b-cdn.net/cc30864e-8172-44e5-a07d-606fcf08b480/thumbnail.jpg',
-    after: 'https://vz-0822fa3c-02f.b-cdn.net/4406abe0-3a3b-4327-bf0c-21e4cf829ec9/playlist.m3u8',
-    afterPoster: 'https://vz-0822fa3c-02f.b-cdn.net/4406abe0-3a3b-4327-bf0c-21e4cf829ec9/thumbnail.jpg',
-  },
-  {
-    id: 9,
-    before: 'https://vz-0822fa3c-02f.b-cdn.net/f8588ef0-02d5-493f-8fae-998e32dac99d/playlist.m3u8',
-    beforePoster: 'https://vz-0822fa3c-02f.b-cdn.net/f8588ef0-02d5-493f-8fae-998e32dac99d/thumbnail.jpg',
-    after: 'https://vz-0822fa3c-02f.b-cdn.net/a275e654-eca1-4d57-a745-415f82c971db/playlist.m3u8',
-    afterPoster: 'https://vz-0822fa3c-02f.b-cdn.net/a275e654-eca1-4d57-a745-415f82c971db/thumbnail.jpg',
-  }
-];
+  // ...existing code...
+  // Commented out static loopItems
+  // const loopItems = [...];
+
+  const [loopItems, setLoopItems] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchAndFormat() {
+      try {
+        const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
+        const res = await fetch(
+          `${API_BASE_URL}/api/admin/media-items/category/test?subsection=Before/After Video`,
+          { credentials: 'include' },
+        )
+        const data = await res.json()
+        if (data && Array.isArray(data.data)) {
+          // Group by pairId
+          const grouped = {}
+          for (const item of data.data) {
+            if (!item.pairId) continue
+            if (!grouped[item.pairId]) grouped[item.pairId] = {}
+            if (item.role === 'before') {
+              grouped[item.pairId].before = item.src
+              grouped[item.pairId].beforePoster =
+                item.poster || item.beforePoster || ''
+            } else if (item.role === 'after') {
+              grouped[item.pairId].after = item.src
+              grouped[item.pairId].afterPoster =
+                item.poster || item.afterPoster || ''
+            }
+            grouped[item.pairId].id = item.pairId
+          }
+          // Only include pairs with both before and after
+          let pairs = Object.values(grouped).filter(
+            (pair) => pair.before && pair.after,
+          )
+          // Duplicate the array
+          pairs = [...pairs, ...pairs]
+          setLoopItems(pairs)
+        }
+      } catch (err) {
+        console.error('Failed to fetch loopItems:', err)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchAndFormat()
+  }, [])
 
   return (
     <div ref={containerRef} className="relative bg-primary">
@@ -258,11 +234,11 @@ const loopItems = [
           <TrustedBySection />
         </div>
         <div ref={featuredRef}>
-          <div ref={blackSectionStartRef} />  
-   <Suspense fallback={<div aria-hidden="true" />}>
-    <FeaturedProjects scrollRef={featuredRef} />
-  </Suspense>
-</div>
+          <div ref={blackSectionStartRef} />
+          <Suspense fallback={<div aria-hidden="true" />}>
+            <FeaturedProjects scrollRef={featuredRef} />
+          </Suspense>
+        </div>
         <div ref={blackSectionEndRef}>
           <section className="overflow-x-hidden">
             {/* Section Header */}

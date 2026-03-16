@@ -159,21 +159,25 @@ export default function VideoSection() {
   const [pricing, setPricing] = useState(null)
   const [pricesObj, setPricesObj] = useState({})
   const [portfolioVideos, setPortfolioVideos] = useState([])
+  const [isLoadingPortfolio, setIsLoadingPortfolio] = useState(true)
   const [serviceVideos, setServiceVideos] = useState([])
 
-    useEffect(() => {
-      // Print the array in the desired format for debugging
-      if (serviceVideos && Array.isArray(serviceVideos)) {
-        const formatted = serviceVideos.map(v => ({
-          cdnLink: v.cdnLink || v.src || '',
-          poster: v.poster || v.thumbnail || '',
-          title: v.title || '',
-        }));
-        console.log('verticalServices array example:', formatted);
-      } else {
-        console.log('verticalServices array is empty or not an array:', serviceVideos);
-      }
-    }, [serviceVideos]);
+  useEffect(() => {
+    // Print the array in the desired format for debugging
+    if (serviceVideos && Array.isArray(serviceVideos)) {
+      const formatted = serviceVideos.map((v) => ({
+        cdnLink: v.cdnLink || v.src || '',
+        poster: v.poster || v.thumbnail || '',
+        title: v.title || '',
+      }))
+      console.log('verticalServices array example:', formatted)
+    } else {
+      console.log(
+        'verticalServices array is empty or not an array:',
+        serviceVideos,
+      )
+    }
+  }, [serviceVideos])
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/pricing`)
@@ -216,6 +220,7 @@ export default function VideoSection() {
 
   // Fetch portfolio videos (admin logic: only one allowed, category 'test')
   useEffect(() => {
+    setIsLoadingPortfolio(true)
     fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/api/admin/media-items/category/test?subsection=home-portfolio`,
       {
@@ -228,11 +233,15 @@ export default function VideoSection() {
         if (data && Array.isArray(data.data)) {
           setPortfolioVideos(data.data)
           console.log('Portfolio Videos:', data.data)
+        } else {
+          setPortfolioVideos([])
         }
       })
       .catch((err) => {
         console.error('Portfolio API error:', err)
+        setPortfolioVideos([])
       })
+      .finally(() => setIsLoadingPortfolio(false))
   }, [])
 
   // Fetch service videos
@@ -365,7 +374,9 @@ export default function VideoSection() {
           </div>
           {/* Portfolio Video Section - Show only one video like admin */}
           <div className="relative w-full max-w-6xl mx-auto mt-6">
-            {portfolioVideos.length > 0 ? (
+            {isLoadingPortfolio ? (
+              <div className="w-full aspect-video rounded-xl bg-white animate-pulse" />
+            ) : portfolioVideos.length > 0 ? (
               <motion.div
                 key={portfolioVideos[0]._id || 0}
                 className="overflow-hidden rounded-xl aspect-video shadow-2xl"
@@ -413,7 +424,7 @@ export default function VideoSection() {
               </motion.div>
             ) : (
               <motion.div className="text-center text-gray-500">
-                No portfolio video found.
+                No Portfolio video found.
               </motion.div>
             )}
           </div>
@@ -487,7 +498,7 @@ export default function VideoSection() {
             }}
             sectionLabel="Types of videos"
             subheading="Explore high-impact videos crafted for every platform, goal, and industry."
-            verticalServices={serviceVideos.map(v => ({
+            verticalServices={serviceVideos.map((v) => ({
               cdnLink: v.cdnLink || v.src || '',
               poster: v.poster || v.thumbnail || '',
               title: v.title || '',

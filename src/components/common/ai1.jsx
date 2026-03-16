@@ -57,9 +57,7 @@ import { useEffect, useRef } from 'react'
 //   },
 // ];
 
-
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'
 
 export default function AI1() {
   const [open, setOpen] = useState(false)
@@ -72,7 +70,7 @@ export default function AI1() {
     console.log('Fetching marquee images from API...')
     fetch(
       `${API_BASE_URL}/api/admin/media-items/category/ai_lab?subsection=primary_graphics`,
-      { credentials: 'include' }
+      { credentials: 'include' },
     )
       .then((res) => res.json())
       .then((data) => {
@@ -87,7 +85,6 @@ export default function AI1() {
       .catch(() => setMarqueeImages([]))
       .finally(() => setLoading(false))
   }, [])
-
 
   const handlePlan = () => {
     // If already on a page that has BookCall component
@@ -165,7 +162,8 @@ export default function AI1() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3, duration: 0.6 }}
         >
-          Create smarter, faster, and limitless with AI-powered content that scales with your brand.
+          Create smarter, faster, and limitless with AI-powered content that
+          scales with your brand.
         </motion.p>
 
         {/* Buttons */}
@@ -221,27 +219,40 @@ export default function AI1() {
         transition={{ duration: 0.8 }}
         viewport={{ once: true }}
       >
-        <Marquee
-          speed={50}
-          direction="left"
-          gradient={false}
-          className="overflow-hidden"
-        >
+        {loading ? (
           <div className="inline-flex items-center gap-5">
-            {' '}
-            {/* no extra gap */}
-            {marqueeImages.map((img, idx) => (
-              <div key={`${img.src || img._id || idx}`} className={`flex-shrink-0 ${idx === marqueeImages.length - 1 ? 'mr-5' : ''}`}>
-                <img
-                  src={img.src}
-                  alt={img.alt || 'AI Graphic'}
-                  className="h-48 sm:h-60 md:h-96 w-auto object-cover rounded-2xl transition-shadow duration-300"
-                  loading="lazy"
-                />
+            {[...Array(6)].map((_, idx) => (
+              <div key={idx} className="flex-shrink-0">
+                <div className="h-48 sm:h-60 md:h-96 w-64 bg-white rounded-2xl animate-pulse" />
               </div>
             ))}
           </div>
-        </Marquee>
+        ) : (
+          <Marquee
+            speed={50}
+            direction="left"
+            gradient={false}
+            className="overflow-hidden"
+          >
+            <div className="inline-flex items-center gap-5">
+              {' '}
+              {/* no extra gap */}
+              {marqueeImages.map((img, idx) => (
+                <div
+                  key={`${img.src || img._id || idx}`}
+                  className={`flex-shrink-0 ${idx === marqueeImages.length - 1 ? 'mr-5' : ''}`}
+                >
+                  <img
+                    src={img.src}
+                    alt={img.alt || 'AI Graphic'}
+                    className="h-48 sm:h-60 md:h-96 w-auto object-cover rounded-2xl transition-shadow duration-300"
+                    loading="lazy"
+                  />
+                </div>
+              ))}
+            </div>
+          </Marquee>
+        )}
       </motion.div>
 
       <div className="block md:hidden mt-8 text-center">
@@ -252,7 +263,8 @@ export default function AI1() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3, duration: 0.6 }}
         >
-          Create smarter, faster, and limitless with AI-powered content that scales with your brand.
+          Create smarter, faster, and limitless with AI-powered content that
+          scales with your brand.
         </motion.p>
 
         {/* Buttons */}
