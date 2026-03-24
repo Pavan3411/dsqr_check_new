@@ -130,7 +130,7 @@ export default function Ai_Lap() {
   const [verticalServices, setVerticalServices] = useState([])
   useEffect(() => {
     fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/admin/media-items/ai/service-offered`,
+      `${process.env.NEXT_PUBLIC_API_URL}api/admin/media-items/category/ai_lab?subsection=service_offered`,
     )
       .then((res) => res.json())
       .then((data) => {

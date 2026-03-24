@@ -275,6 +275,7 @@ export default function CreativeSuiteAnimation() {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/settings/ourWorkStats`)
       .then((res) => res.json())
       .then((data) => {
+        console.log('Fetched ourWorkStats:', data)
         if (data.success && data.data) setOurWorkStats(data.data)
       })
   }, [])
