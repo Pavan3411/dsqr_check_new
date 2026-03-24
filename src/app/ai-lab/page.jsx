@@ -129,13 +129,21 @@ export default function Ai_Lap() {
   })
   const [verticalServices, setVerticalServices] = useState([])
   useEffect(() => {
+    console.log('Fetching vertical services from API...')
     fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}api/admin/media-items/category/ai_lab?subsection=service_offered`,
+      `${process.env.NEXT_PUBLIC_API_URL}/api/admin/media-items/category/ai_lab?subsection=service_offered`,
     )
       .then((res) => res.json())
       .then((data) => {
-        if (data.success) setVerticalServices(data.data)
-        console.log('Fetched vertical services:', data.data)
+        if (data.success && Array.isArray(data.data)) {
+          const formattedServices = data.data.map(item => ({
+            cdnLink: item.src || '',
+            poster: item.poster || '',
+            title: item.title || ''
+          }));
+          setVerticalServices([...formattedServices, ...formattedServices])
+          console.log('Fetched vertical services:', [...formattedServices, ...formattedServices])
+        }
       })
   }, [])
   useEffect(() => {

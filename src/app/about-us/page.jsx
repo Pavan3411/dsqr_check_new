@@ -185,8 +185,8 @@ useEffect(() => {
           // Only include pairs that have both 'before' and 'after' links
           .filter(item => item.before && item.after);
 
-        setLoopItems(formatted);
-        console.log('Successfully paired loop items:', formatted);
+        setLoopItems([...formatted, ...formatted]);
+        console.log('Successfully paired loop items:', [...formatted, ...formatted]);
       } else {
         setLoopItems([]);
       }
