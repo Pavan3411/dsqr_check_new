@@ -498,7 +498,7 @@ export default function VideoSection() {
             }}
             sectionLabel="Types of videos"
             subheading="Explore high-impact videos crafted for every platform, goal, and industry."
-            verticalServices={serviceVideos.map((v) => ({
+            verticalServices={[...serviceVideos, ...serviceVideos].map((v) => ({
               cdnLink: v.cdnLink || v.src || '',
               poster: v.poster || v.thumbnail || '',
               title: v.title || '',

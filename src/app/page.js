@@ -242,7 +242,7 @@ export default function VideoSection() {
 //     title: 'AI Reel 10',
 //   },
 // ]}
- verticalServices={serviceVideos.map(v => ({
+ verticalServices={[...serviceVideos, ...serviceVideos].map(v => ({
               cdnLink: v.cdnLink || v.src || '',
               poster: v.poster || v.thumbnail || '',
               title: v.title || '',
