@@ -3,25 +3,24 @@
 import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Marquee from 'react-fast-marquee'
+import { useQuery } from '@tanstack/react-query' // Added this
 
 export default function TrustedBySection() {
-  const [logos, setLogos] = useState([])
-  const [isLoading, setIsLoading] = useState(true) // Add loading state
 
-  useEffect(() => {
-    fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/admin/media-items/category/client_logos`,
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        if (data && Array.isArray(data.data)) {
-          const logoSrcs = data.data.map((l) => l.src).filter(Boolean)
-          setLogos(logoSrcs)
-        }
-      })
-      .catch((err) => console.error('Failed to fetch logos:', err))
-      .finally(() => setIsLoading(false)) // Ensure loading stops
-  }, [])
+  const { data: logos = [], isLoading } = useQuery({
+    queryKey: ['client-logos'],
+    queryFn: async () => {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/admin/media-items/category/client_logos`
+      )
+      const data = await res.json()
+      if (data && Array.isArray(data.data)) {
+        return data.data.map((l) => l.src).filter(Boolean)
+      }
+      return []
+    },
+    staleTime: 60 * 60 * 1000, // Logos stay fresh in cache for 1 hour
+  })
 
   return (
     <section className="md:py-12 py-4 overflow-hidden relative">

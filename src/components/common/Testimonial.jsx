@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import EmblaTestimonials from '@/components/common/EmblaTestimonials'
+import { useQuery } from '@tanstack/react-query' // Add this
 
 // ✅ Constant data (images reused 1..5 in a loop)
 // const testimonials = [
@@ -119,7 +120,7 @@ export default function TestimonialSection() {
   const [isPaused, setIsPaused] = useState(false)
   const [expanded, setExpanded] = useState(new Set())
   const [overflowMap, setOverflowMap] = useState({})
-  const [testimonials, setTestimonials] = useState([])
+  // const [testimonials, setTestimonials] = useState([])
 
   const viewportRef = useRef(null)
   const trackRef = useRef(null)
@@ -216,7 +217,51 @@ export default function TestimonialSection() {
   const scrollRight = () => {
     targetNudgeRef.current -= cardWidthRef.current
   }
-  // detect overflow text
+ 
+  // const [testimonials, setTestimonials] = useState([])
+
+  const { data: testimonials = [] } = useQuery({
+    queryKey: ['testimonials-list'],
+    queryFn: async () => {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/testimonials`)
+      const data = await res.json()
+      return Array.isArray(data) ? data : Array.isArray(data.data) ? data.data : []
+    },
+    // Move your formatting logic here to keep component clean
+    select: (data) => {
+      const formatK = (num) => {
+        if (typeof num !== 'number') num = Number(num)
+        if (isNaN(num)) return ''
+        if (num >= 1000) return (num / 1000).toFixed(num % 1000 === 0 ? 0 : 1) + 'k'
+        return num.toString()
+      }
+
+      return data.map((item) => {
+        let editingTimeStr = item.stats?.editing_time 
+          ? formatK(item.stats.editing_time) + '+ hrs' 
+          : ''
+        let costStr = item.stats?.cost ? '$' + formatK(item.stats.cost) + '+' : ''
+        let videosStr = item.stats?.videos ? formatK(item.stats.videos) + '+' : ''
+
+        return {
+          id: item.id || item._id,
+          name: item.name,
+          company: item.company,
+          image: item.image,
+          text: item.text,
+          highlights: item.highlight ? [item.highlight] : [],
+          stats: [
+            editingTimeStr ? { value: editingTimeStr, label: 'Editing time saved' } : null,
+            costStr ? { value: costStr, label: 'Cost Saving' } : null,
+            videosStr ? { value: videosStr, label: 'Videos Delivered' } : null,
+          ].filter(Boolean),
+        }
+      })
+    },
+    staleTime: 60 * 60 * 1000, // Keep testimonials cached for 1 hour
+  })
+
+   // detect overflow text
   useEffect(() => {
     const map = {}
     Object.entries(textRefs.current).forEach(([key, el]) => {
@@ -226,93 +271,8 @@ export default function TestimonialSection() {
       }
     })
     setOverflowMap(map)
-  }, [testimonials]) // re-run when testimonials change
+  }, [testimonials]) // This works perfectly with the useQuery data variable
 
-  // const [testimonials, setTestimonials] = useState([])
-
-  useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/testimonials`)
-      .then((res) => res.json())
-      .then((data) => {
-        // Handle API response structure: { success: true, data: [...] }
-        console.log('Raw testimonial data:', data)
-        const arr = Array.isArray(data)
-          ? data
-          : Array.isArray(data.data)
-            ? data.data
-            : []
-        if (!arr.length) {
-          console.error('API did not return an array of testimonials')
-          return
-        }
-        // Helper to format numbers to k (e.g., 2700 -> 2.7k)
-        const formatK = (num) => {
-          if (typeof num !== 'number') num = Number(num)
-          if (isNaN(num)) return ''
-          if (num >= 1000)
-            return (num / 1000).toFixed(num % 1000 === 0 ? 0 : 1) + 'k'
-          return num.toString()
-        }
-
-        const mapped = arr.map((item) => {
-          // Editing time: add + unless value is a percentage
-          let editingTime = item.stats?.editing_time
-          let editingTimeStr = ''
-          if (
-            editingTime !== undefined &&
-            editingTime !== null &&
-            editingTime !== ''
-          ) {
-            const isPercent =
-              typeof editingTime === 'string' &&
-              editingTime.trim().endsWith('%')
-            if (isPercent) {
-              editingTimeStr = editingTime + ' hrs'
-            } else {
-              const formatted = formatK(editingTime)
-              editingTimeStr = formatted + '+ hrs'
-            }
-          }
-
-          // Cost
-          let cost = item.stats?.cost
-          let costStr = ''
-          if (cost !== undefined && cost !== null && cost !== '') {
-            costStr = '$' + formatK(cost) + '+'
-          }
-
-          // Videos
-          let videos = item.stats?.videos
-          let videosStr = ''
-          if (videos !== undefined && videos !== null && videos !== '') {
-            videosStr = formatK(videos) + '+'
-          }
-
-          return {
-            id: item.id,
-            name: item.name,
-            company: item.company,
-            image: item.image,
-            text: item.text,
-            highlights: item.highlight ? [item.highlight] : [],
-            stats: [
-              editingTimeStr
-                ? { value: editingTimeStr, label: 'Editing time saved' }
-                : null,
-              costStr ? { value: costStr, label: 'Cost Saving' } : null,
-              videosStr
-                ? { value: videosStr, label: 'Videos Delivered' }
-                : null,
-            ].filter(Boolean),
-          }
-        })
-        setTestimonials(mapped)
-        console.log('Fetched testimonials:', mapped)
-      })
-      .catch((err) => {
-        console.error('Error fetching testimonials:', err)
-      })
-  }, [])
 
   // useEffect(() => {
   //   fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/testimonials`)

@@ -6,6 +6,7 @@ import Script from 'next/script'
 import ClientWrapper from '@/components/common/ClientWrapper'
 import ThirdPartyScripts from '@/components/ThirdPartyScripts'
 import { Suspense } from 'react'
+import QueryProvider from './QueryProvider'
 
 const instrument = localFont({
   src: '/fonts/InstrumentSerif-Regular.ttf',
@@ -121,7 +122,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <ScrollToTop />
 <Suspense fallback={null}>
         <ClientWrapper>
+          <QueryProvider>
           {children}
+          </QueryProvider>
         </ClientWrapper>
         </Suspense>
       </body>

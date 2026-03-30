@@ -5,49 +5,56 @@ import { useEffect, useState } from 'react'
 import { Check } from 'lucide-react'
 import Link from 'next/link'
 import FreeTrialForm from '@/components/common/FreeTrialForm'
+import { useQuery } from '@tanstack/react-query' // Added this
 import { Button } from '@/components/ui/button'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 
 export default function GraphicSection() {
-  const [images, setImages] = useState([])
-  const [loaded, setLoaded] = useState([])
+  // const [images, setImages] = useState([])
+  // const [loaded, setLoaded] = useState([])
   const [open, setOpen] = useState(false)
   const router = useRouter()
 
+  // Replace lines 11-46 with this:
+  const { data: images = [], isLoading } = useQuery({
+    queryKey: ['graphics-primary-images'],
+    queryFn: async () => {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/admin/media-items/category/graphics?subsection=primary-images`,
+        { credentials: 'include' }
+      )
+      const data = await res.json()
+      if (data.success && Array.isArray(data.data)) {
+        return data.data.map((img) => {
+          const baseUrl = img.src || img.url || ''
+          const params = 'width=800&quality=70&format=webp'
+          return baseUrl.includes(params)
+            ? baseUrl
+            : `${baseUrl}${baseUrl.includes('?') ? '&' : '?'}${params}`
+        })
+      }
+      return []
+    },
+    staleTime: 10 * 60 * 1000, // Data stays fresh for 10 mins
+  })
+  // 1. Initialize the loaded array when images are fetched
+  const [loaded, setLoaded] = useState([]);
+
   useEffect(() => {
-    fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/admin/media-items/category/graphics?subsection=primary-images`,
-      {
-        credentials: 'include',
-      },
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success && Array.isArray(data.data)) {
-          const imgs = data.data.map((img, i) => {
-            const baseUrl = img.src || img.url || ''
-            if (!baseUrl) return ''
-            // Avoid double appending if already present
-            const params = '?width=800&quality=70&format=webp'
-            return baseUrl.includes(params)
-              ? baseUrl
-              : baseUrl +
-                  (baseUrl.includes('?') ? '&' : '?') +
-                  'width=800&quality=70&format=webp'
-          })
-          setImages(imgs)
-          setLoaded(Array(imgs.length).fill(false))
-        } else {
-          setImages([])
-          setLoaded([])
-        }
-      })
-      .catch(() => {
-        setImages([])
-        setLoaded([])
-      })
-  }, [])
+    if (images.length > 0) {
+      setLoaded(new Array(images.length).fill(false));
+    }
+  }, [images]);
+
+  // 2. Helper to update the array index
+  const handleImageLoad = (index) => {
+    setLoaded((prev) => {
+      const next = [...prev];
+      next[index] = true;
+      return next;
+    });
+  };
 
   const handlePlan = () => {
     // If already on a page that has BookCall component
@@ -186,7 +193,7 @@ export default function GraphicSection() {
             {/* Row 1 order: 1, 2, 4, 3 */}
 
             <div className="relative rounded-2xl overflow-hidden col-span-1 bg-white">
-              {!loaded[0] && <div className="absolute inset-0 bg-white" />}
+              {(!loaded[0] || isLoading) && <div className="absolute inset-0 bg-white" />}
               {images[0] && (
                 <Image
                   src={images[0]}
@@ -194,27 +201,14 @@ export default function GraphicSection() {
                   fill
                   className="object-cover"
                   sizes="(max-width: 768px) 100vw, 33vw"
-                  // unoptimized removed to enable Next.js image optimization
-                  onLoad={() =>
-                    setLoaded((prev) => {
-                      const arr = [...prev]
-                      arr[0] = true
-                      return arr
-                    })
-                  }
-                  onError={() =>
-                    setLoaded((prev) => {
-                      const arr = [...prev]
-                      arr[0] = true
-                      return arr
-                    })
-                  }
+                  onLoad={() => handleImageLoad(0)}
+  onError={() => handleImageLoad(0)}
                 />
               )}
             </div>
 
             <div className="relative rounded-2xl overflow-hidden col-span-2 bg-white">
-              {!loaded[1] && <div className="absolute inset-0 bg-white" />}
+              {(!loaded[1] || isLoading) && <div className="absolute inset-0 bg-white" />}
               {images[1] && (
                 <Image
                   src={images[1]}
@@ -222,27 +216,14 @@ export default function GraphicSection() {
                   fill
                   className="object-cover"
                   sizes="(max-width: 768px) 100vw, 66vw"
-                  // unoptimized removed to enable Next.js image optimization
-                  onLoad={() =>
-                    setLoaded((prev) => {
-                      const arr = [...prev]
-                      arr[1] = true
-                      return arr
-                    })
-                  }
-                  onError={() =>
-                    setLoaded((prev) => {
-                      const arr = [...prev]
-                      arr[1] = true
-                      return arr
-                    })
-                  }
+                  onLoad={() => handleImageLoad(1)}
+  onError={() => handleImageLoad(1)}
                 />
               )}
             </div>
 
             <div className="relative rounded-2xl overflow-hidden col-span-1 bg-white">
-              {!loaded[2] && <div className="absolute inset-0 bg-white" />}
+              {(!loaded[2] || isLoading) && <div className="absolute inset-0 bg-white" />}
               {images[2] && (
                 <Image
                   src={images[2]}
@@ -250,27 +231,14 @@ export default function GraphicSection() {
                   fill
                   className="object-cover"
                   sizes="(max-width: 768px) 100vw, 33vw"
-                  // unoptimized removed to enable Next.js image optimization
-                  onLoad={() =>
-                    setLoaded((prev) => {
-                      const arr = [...prev]
-                      arr[2] = true
-                      return arr
-                    })
-                  }
-                  onError={() =>
-                    setLoaded((prev) => {
-                      const arr = [...prev]
-                      arr[2] = true
-                      return arr
-                    })
-                  }
+                  onLoad={() => handleImageLoad(2)}
+  onError={() => handleImageLoad(2)}
                 />
               )}
             </div>
 
             <div className="relative rounded-2xl overflow-hidden col-span-1 bg-white">
-              {!loaded[3] && <div className="absolute inset-0 bg-white" />}
+              {(!loaded[3] || isLoading) && <div className="absolute inset-0 bg-white" />}
               {images[3] && (
                 <Image
                   src={images[3]}
@@ -278,28 +246,15 @@ export default function GraphicSection() {
                   fill
                   className="object-cover"
                   sizes="(max-width: 768px) 100vw, 33vw"
-                  // unoptimized removed to enable Next.js image optimization
-                  onLoad={() =>
-                    setLoaded((prev) => {
-                      const arr = [...prev]
-                      arr[3] = true
-                      return arr
-                    })
-                  }
-                  onError={() =>
-                    setLoaded((prev) => {
-                      const arr = [...prev]
-                      arr[3] = true
-                      return arr
-                    })
-                  }
+                  onLoad={() => handleImageLoad(3)}
+  onError={() => handleImageLoad(3)}
                 />
               )}
             </div>
 
             {/* Row 2 order: 5, 6, 7 */}
             <div className="relative rounded-2xl overflow-hidden col-span-1 lg:col-span-2 bg-white">
-              {!loaded[4] && <div className="absolute inset-0 bg-white" />}
+              {(!loaded[4] || isLoading) && <div className="absolute inset-0 bg-white" />}
               {images[4] && (
                 <Image
                   src={images[4]}
@@ -307,27 +262,14 @@ export default function GraphicSection() {
                   fill
                   className="object-cover"
                   sizes="(max-width: 768px) 100vw, 50vw"
-                  // unoptimized removed to enable Next.js image optimization
-                  onLoad={() =>
-                    setLoaded((prev) => {
-                      const arr = [...prev]
-                      arr[4] = true
-                      return arr
-                    })
-                  }
-                  onError={() =>
-                    setLoaded((prev) => {
-                      const arr = [...prev]
-                      arr[4] = true
-                      return arr
-                    })
-                  }
+                  onLoad={() => handleImageLoad(4)}
+  onError={() => handleImageLoad(4)}
                 />
               )}
             </div>
 
             <div className="relative rounded-2xl overflow-hidden col-span-1 bg-white">
-              {!loaded[5] && <div className="absolute inset-0 bg-white" />}
+              {(!loaded[5] || isLoading) && <div className="absolute inset-0 bg-white" />}
               {images[5] && (
                 <Image
                   src={images[5]}
@@ -335,27 +277,14 @@ export default function GraphicSection() {
                   fill
                   className="object-cover"
                   sizes="(max-width: 768px) 100vw, 33vw"
-                  // unoptimized removed to enable Next.js image optimization
-                  onLoad={() =>
-                    setLoaded((prev) => {
-                      const arr = [...prev]
-                      arr[5] = true
-                      return arr
-                    })
-                  }
-                  onError={() =>
-                    setLoaded((prev) => {
-                      const arr = [...prev]
-                      arr[5] = true
-                      return arr
-                    })
-                  }
+                  onLoad={() => handleImageLoad(5)}
+  onError={() => handleImageLoad(5)}
                 />
               )}
             </div>
 
             <div className="relative rounded-2xl overflow-hidden col-span-2 bg-white">
-              {!loaded[6] && <div className="absolute inset-0 bg-white" />}
+              {(!loaded[6] || isLoading) && <div className="absolute inset-0 bg-white" />}
               {images[6] && (
                 <Image
                   src={images[6]}
@@ -363,21 +292,8 @@ export default function GraphicSection() {
                   fill
                   className="object-cover"
                   sizes="(max-width: 768px) 100vw, 66vw"
-                  // unoptimized removed to enable Next.js image optimization
-                  onLoad={() =>
-                    setLoaded((prev) => {
-                      const arr = [...prev]
-                      arr[6] = true
-                      return arr
-                    })
-                  }
-                  onError={() =>
-                    setLoaded((prev) => {
-                      const arr = [...prev]
-                      arr[6] = true
-                      return arr
-                    })
-                  }
+                  onLoad={() => handleImageLoad(6)}
+  onError={() => handleImageLoad(6)}
                 />
               )}
             </div>

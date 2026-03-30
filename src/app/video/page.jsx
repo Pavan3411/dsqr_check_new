@@ -22,6 +22,7 @@ import { useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import ScrollingFooterBanner from '../../components/common/ScrollingFooterBanner'
 import { useAnimatedBackground } from '../../components/hooks/useAnimatedBackground'
+import { useQuery } from '@tanstack/react-query'
 
 export const videoFaqData = [
   {
@@ -158,8 +159,8 @@ export default function VideoSection() {
   }
   const [pricing, setPricing] = useState(null)
   const [pricesObj, setPricesObj] = useState({})
-  const [portfolioVideos, setPortfolioVideos] = useState([])
-  const [isLoadingPortfolio, setIsLoadingPortfolio] = useState(true)
+  // const [portfolioVideos, setPortfolioVideos] = useState([])
+  // const [isLoadingPortfolio, setIsLoadingPortfolio] = useState(true)
   const [serviceVideos, setServiceVideos] = useState([])
 
   useEffect(() => {
@@ -218,31 +219,19 @@ export default function VideoSection() {
       .catch((err) => console.error(err))
   }, [])
 
-  // Fetch portfolio videos (admin logic: only one allowed, category 'test')
-  useEffect(() => {
-    setIsLoadingPortfolio(true)
-    fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/admin/media-items/category/test?subsection=home-portfolio`,
-      {
-        credentials: 'include',
-      },
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        console.log('Portfolio API response:', data)
-        if (data && Array.isArray(data.data)) {
-          setPortfolioVideos(data.data)
-          console.log('Portfolio Videos:', data.data)
-        } else {
-          setPortfolioVideos([])
-        }
-      })
-      .catch((err) => {
-        console.error('Portfolio API error:', err)
-        setPortfolioVideos([])
-      })
-      .finally(() => setIsLoadingPortfolio(false))
-  }, [])
+  // Replace the portfolio useState and useEffect with this:
+  const { data: portfolioVideos = [], isLoading: isLoadingPortfolio } = useQuery({
+    queryKey: ['video-portfolio'],
+    queryFn: async () => {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/admin/media-items/category/test?subsection=home-portfolio`,
+        { credentials: 'include' }
+      );
+      const data = await res.json();
+      return Array.isArray(data?.data) ? data.data : [];
+    },
+    staleTime: 30 * 60 * 1000, // Keep cached for 30 minutes
+  });
 
   // Fetch service videos
   useEffect(() => {
@@ -385,7 +374,7 @@ export default function VideoSection() {
                 transition={{ duration: 0.8, ease: 'easeOut' }}
                 viewport={{ once: true }}
               >
-                {portfolioVideos[0].src &&
+                {portfolioVideos[0]?.src &&
                 getBunnyIframeUrl(portfolioVideos[0].src, libraryId) ? (
                   <iframe
                     src={getBunnyIframeUrl(portfolioVideos[0].src, libraryId)}
@@ -395,7 +384,7 @@ export default function VideoSection() {
                     className="w-full h-full border-0"
                     title={portfolioVideos[0].title || 'Portfolio Video'}
                   />
-                ) : portfolioVideos[0].cdnLink &&
+                ) : portfolioVideos[0]?.cdnLink &&
                   getBunnyIframeUrl(portfolioVideos[0].cdnLink, libraryId) ? (
                   <iframe
                     src={getBunnyIframeUrl(
@@ -419,7 +408,7 @@ export default function VideoSection() {
                   />
                 ) : null}
                 <div className="p-2 text-center text-sm font-medium text-gray-800">
-                  {portfolioVideos[0].title}
+                  {portfolioVideos[0]?.title}
                 </div>
               </motion.div>
             ) : (

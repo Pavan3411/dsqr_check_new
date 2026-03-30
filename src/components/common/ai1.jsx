@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import Marquee from 'react-fast-marquee'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef } from 'react'
+import { useQuery } from '@tanstack/react-query'
 
 // export default function AI1() {
 //   const [open, setOpen] = useState(false)
@@ -62,29 +63,21 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'
 export default function AI1() {
   const [open, setOpen] = useState(false)
   const [paused, setPaused] = useState(false)
-  const router = useRouter()
-  const [marqueeImages, setMarqueeImages] = useState([])
-  const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    console.log('Fetching marquee images from API...')
-    fetch(
-      `${API_BASE_URL}/api/admin/media-items/category/ai_lab?subsection=primary_graphics`,
-      { credentials: 'include' },
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        console.log('API response:', data)
-        if (data.success && Array.isArray(data.data)) {
-          setMarqueeImages(data.data)
-          console.log('Fetched marquee images:', data.data)
-        } else {
-          setMarqueeImages([])
-        }
-      })
-      .catch(() => setMarqueeImages([]))
-      .finally(() => setLoading(false))
-  }, [])
+  const router = useRouter()
+  // Replace marqueeImages/loading state and useEffect with this:
+  const { data: marqueeImages = [], isLoading } = useQuery({
+    queryKey: ['ai-marquee-images'],
+    queryFn: async () => {
+      const res = await fetch(
+        `${API_BASE_URL}/api/admin/media-items/category/ai_lab?subsection=primary_graphics`,
+        { credentials: 'include' }
+      )
+      const data = await res.json()
+      return data.success && Array.isArray(data.data) ? data.data : []
+    },
+    staleTime: 15 * 60 * 1000, // Keep images in cache for 15 minutes
+  })
 
   const handlePlan = () => {
     // If already on a page that has BookCall component
@@ -219,7 +212,7 @@ export default function AI1() {
         transition={{ duration: 0.8 }}
         viewport={{ once: true }}
       >
-        {loading ? (
+        {isLoading ? (
           <div className="inline-flex items-center gap-5">
             {[...Array(6)].map((_, idx) => (
               <div key={idx} className="flex-shrink-0">
